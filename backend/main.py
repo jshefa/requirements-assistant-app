@@ -12,6 +12,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from requirements_parser import parse_requirements, validate_requirements
+from oml_parser import REQUIREMENT_TYPES, parse_oml_requirements
 from ai_analyzer import analyze_all_requirements
 from feedback_storage import (
     save_analysis, save_feedback, load_analysis, load_feedback,
@@ -87,12 +88,27 @@ FRONTEND_DIST = BASE_DIR / 'frontend' / 'dist'
 PROVIDER_ENV_KEYS = {
     'anthropic': 'ANTHROPIC_API_KEY',
     'openai': 'OPENAI_API_KEY',
+    # Self-hosted servers vary: some issue personal keys (VT ARC's does), others
+    # accept anything. The key is optional here for that reason — see
+    # _provider_configured.
+    'local': 'LOCAL_LLM_API_KEY',
 }
 
 PROVIDER_LABELS = {
     'anthropic': 'Claude (Anthropic)',
     'openai': 'GPT-4o (OpenAI)',
+    'local': 'Local / self-hosted',
 }
+
+# The setting an operator has to supply to turn each provider on, named in the
+# error they get when it is missing.
+PROVIDER_SETUP_HINT = {
+    'anthropic': 'ANTHROPIC_API_KEY',
+    'openai': 'OPENAI_API_KEY',
+    'local': 'LOCAL_LLM_URL',
+}
+
+LOCAL_PROVIDER = 'local'
 
 
 def _server_api_key(provider: str) -> str:
@@ -101,9 +117,21 @@ def _server_api_key(provider: str) -> str:
     return os.getenv(env_var, '').strip() if env_var else ''
 
 
+def _provider_configured(provider: str) -> bool:
+    """Whether the operator has set this provider up.
+
+    The hosted providers are configured by API key. The local one is configured
+    by endpoint instead — a self-hosted server often authenticates nothing at
+    all, so demanding a key would hide a perfectly working model.
+    """
+    if provider == LOCAL_PROVIDER:
+        return bool(os.getenv('LOCAL_LLM_URL', '').strip())
+    return bool(_server_api_key(provider))
+
+
 def _available_providers() -> list:
-    """Providers that currently have a key configured on the server."""
-    return [p for p in PROVIDER_ENV_KEYS if _server_api_key(p)]
+    """Providers this deployment is currently able to serve."""
+    return [p for p in PROVIDER_ENV_KEYS if _provider_configured(p)]
 
 
 # ===========================================================
@@ -220,8 +248,9 @@ async def _warn_if_unprotected():
         )
     if not _available_providers():
         print(
-            "WARNING: no AI provider key configured — set ANTHROPIC_API_KEY "
-            "and/or OPENAI_API_KEY. Analysis requests will fail until you do."
+            "WARNING: no AI provider configured — set ANTHROPIC_API_KEY, "
+            "OPENAI_API_KEY, or LOCAL_LLM_URL. Analysis requests will fail "
+            "until you do."
         )
 
 # Note: no uploads/outputs directories — all session data is kept in memory only
@@ -267,6 +296,36 @@ def get_config():
     }
 
 
+def _parse_by_extension(filename: str, text: str) -> List[dict]:
+    """Parse an uploaded requirements file according to its extension.
+
+    Anything that is not .oml goes to the original line-based parser, which is
+    what every existing caller relies on — .txt uploads behave exactly as they
+    did before OML support was added.
+    """
+    if not filename.lower().endswith('.oml'):
+        return parse_requirements(text)
+
+    try:
+        requirements = parse_oml_requirements(text)
+    except ValueError as e:
+        # Raised on malformed OML (an unclosed bracket or string literal). The
+        # message names the problem, so pass it straight through.
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if not requirements:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "No requirements found in the OML file. Expected instances of a "
+                f"'{'/'.join(REQUIREMENT_TYPES)}' type carrying a natural-language "
+                "description property."
+            ),
+        )
+
+    return requirements
+
+
 @app.post("/api/upload")
 async def upload_files(
     request: Request,
@@ -282,15 +341,18 @@ async def upload_files(
     if provider not in PROVIDER_ENV_KEYS:
         raise HTTPException(status_code=400, detail=f"Unsupported AI provider '{provider}'.")
 
-    api_key = _server_api_key(provider)
-    if not api_key:
+    if not _provider_configured(provider):
         raise HTTPException(
             status_code=503,
             detail=(
                 f"{PROVIDER_LABELS[provider]} is not configured on this server. "
-                f"Set {PROVIDER_ENV_KEYS[provider]} in the deployment environment."
+                f"Set {PROVIDER_SETUP_HINT[provider]} in the deployment environment."
             ),
         )
+
+    # Empty for a local server that authenticates nothing; the analyzer supplies
+    # a placeholder in that case.
+    api_key = _server_api_key(provider)
 
     # Key and provider stay request-scoped (passed straight to the analyzer) so
     # concurrent requests never clobber each other's configuration.
@@ -306,11 +368,13 @@ async def upload_files(
         ctx_content = await context_file.read()
         context_text = ctx_content.decode('utf-8', errors='replace')
 
-    # Parse requirements
+    # Parse requirements. Both parsers return the same shape, so everything
+    # downstream — analysis, feedback, the generated document — is unaware of
+    # which format the file arrived in.
     req_text = content.decode('utf-8', errors='replace')
-    requirements = parse_requirements(req_text)
-    validation = validate_requirements(requirements)
+    requirements = _parse_by_extension(requirements_file.filename or '', req_text)
 
+    validation = validate_requirements(requirements)
     if not validation['valid']:
         raise HTTPException(status_code=400, detail=validation['error'])
 
@@ -334,6 +398,13 @@ async def upload_files(
             "violations_count": sum(
                 sum(1 for ev in req.get('criteria_evaluations', []) if not ev.get('satisfied', True))
                 for req in analysis['requirements']
+            ),
+            # A requirement whose analysis failed is recorded as satisfying every
+            # criterion, so violations_count alone cannot tell a clean run from a
+            # broken one. Report the failures so the caller can see the
+            # difference.
+            "errors_count": sum(
+                1 for req in analysis['requirements'] if req.get('error')
             ),
             "rag_enhanced": analysis.get('rag_enhanced', False)
         }

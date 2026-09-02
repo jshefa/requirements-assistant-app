@@ -104,7 +104,13 @@ export default function UploadPage() {
 
       setBarPct(100)
       const violated = res.data.violations_count
-      setProgress(`Done! ${violated} criteria violated across ${res.data.requirements_count} requirements.`)
+      const failed = res.data.errors_count || 0
+      setProgress(
+        `Done! ${violated} criteria violated across ${res.data.requirements_count} requirements.`
+        + (failed
+            ? ` ${failed} could not be analysed — their criteria are not results. Check the server log.`
+            : '')
+      )
       setTimeout(() => setSessionResult(res.data.session_id), 400)
     } catch (err) {
       const msg = err.response?.data?.detail || err.message || 'Upload failed'
@@ -156,16 +162,19 @@ export default function UploadPage() {
 
           {/* Requirements file */}
           <div className="form-group">
-            <label htmlFor="req-file">Requirements File (.txt) *</label>
+            <label htmlFor="req-file">Requirements File (.txt or .oml) *</label>
             <input
               id="req-file"
               type="file"
-              accept=".txt"
+              accept=".txt,.oml"
               onChange={(e) => setReqFile(e.target.files[0])}
               disabled={loading}
             />
             <p className="hint">
-              Format: "1. The system shall...", "REQ-001: The system shall...", "MR-C1.1: The system shall..."
+              .txt format: "1. The system shall...", "REQ-001: The system shall...", "MR-C1.1: The system shall..."
+            </p>
+            <p className="hint">
+              .oml: requirements are read from instances of a Requirement type in an OML description.
             </p>
           </div>
 
