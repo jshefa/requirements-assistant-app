@@ -1,0 +1,18 @@
+1. The System shall be able to move a point mass from an origin point to a fixed
+destination point. Note 1: The path is notional; the actual path is to be determined. Note 2: Assume that a link between the system output and the point mass will be designed separately (by someone else) and will match the needs of your design. Note 3: The origin point is (X, Y, Z) = (0 mm, 0 mm,
+101.6 mm) or [0”, 0”, 4”]. Note 4: The destination point is (X, Y, Z) = (71.84 mm, 0
+mm, -71.84 mm) or [2.82”, 0”, -2.82”].
+2. The System shall be able to move the point mass from the destination point
+back to the origin point. Note 1: The path is notional; the actual path is to be determined. Note 2: Assume that a link between the system output and the point mass will be designed separately (by someone else) and will match the needs of your design. Note 3: The origin point is (X, Y, Z) = (0 mm, 0 mm, 101.6 mm) or [0”, 0”, 4”]. Note 4: The destination point is (X, Y, Z) = (71.84 mm, 0
+mm, -71.84 mm) or [2.82”, 0”, -2.82”].
+3. The system shall execute FR1 accurately with +/- 2.5mm [0.1”] accuracy in every Cartesian direction.
+4. The system shall execute FR2 accurately with +/- 2.5mm [0.1”] accuracy in every Cartesian direction.
+5. The System shall be able to execute FR1 in no more than 30 seconds.
+6. The System shall be able to execute FR1 in no less than 5 seconds.
+7. The System shall be able to execute FR2 in no more than 30 seconds.
+8. The System shall be able to execute FR2 in no less than 5 seconds.
+9. The system shall be able to move a point mass of 3.6 kg perpendicularly to normal gravity (9.81 m/s2).
+10. The System shall operate in an atmosphere comparable to that of Earth. Assume 21 degrees centigrade [70 degrees Fahrenheit], with low humidity, and pressurized to 100 kPA [750 mm Hg, 14.5 psi].
+11. The System shall not contribute any particulates (e.g. dust) to the ISS atmosphere.
+12. The System shall enclose all lubricated components to prevent lubricants from leaking into the atmosphere of the ISS.
+13. The System shall not use more than 1.5 Watt-hours to support all operations. Note: Assume a maximum of 1 minute of operations. 

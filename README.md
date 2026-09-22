@@ -8,7 +8,10 @@ This prototype reads a list of engineering requirements and checks each one agai
 ```
 git clone https://github.com/jshefa/requirements-assistant-app.git
 ``` 
-2. First ensure that Docker is installed and running. You can install it at the [official Docker website](https://docs.docker.com/desktop/setup/install/windows-install/). The Docker engine NEEDS to be running before the next step. 
+2. First ensure that Docker is installed and running. The Docker engine NEEDS to be running before the next step. You can install Docker with the following links:
+    - [Windows Install](https://docs.docker.com/desktop/setup/install/windows-install/)
+    - [Mac Install](https://docs.docker.com/desktop/setup/install/mac-install/) 
+
 3. From the project's root directory, run 
 ```
 docker compose up --build

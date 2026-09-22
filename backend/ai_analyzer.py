@@ -292,9 +292,8 @@ def _call_ai(user_prompt: str, system_prompt: str, num_requirements: int, provid
             ],
             "stream": False,
             "options": {
-                "temperature": 0.1,
                 "num_predict": max_tokens,
-                "num_ctx": 8192
+                "num_ctx": 16384
             }
         }).encode("utf-8")
         req = urllib.request.Request(

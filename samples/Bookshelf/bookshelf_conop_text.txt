@@ -1,0 +1,4 @@
+The system must be capable of performing two high-level operations: 
+1.	Retrieve books from the upper levels of a bookshelf (at 6 feet or above).
+2.	To be stowed on most standard bookshelves.
+

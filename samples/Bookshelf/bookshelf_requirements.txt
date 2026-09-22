@@ -1,0 +1,20 @@
+1. The system should extend upwards.
+2. The system must be able to latch onto books.
+3. The system should be padded to protect books.
+4. The system should be quiet.
+5. The system should be smooth.
+6. The system must have an input device.
+7. The system takes at most 10 seconds to complete its task.
+8. The system must be durable and must withstand at least 100 uses.
+9. The system should withstand at least 1 year of usage without maintenance.
+10. The system must weigh 6 pounds or less.
+11. The system must reach 6 feet or above.
+12. The system must be able to carry at least 6 pounds.
+13. The system should have a length of at most 2 square feet.
+14. The system must be a primary noticeable color.
+15. The system must be able to fit inside an average-sized human hand.
+16. The system must cost at most 15 US Dollars to produce.
+17. The system must have at most 3 installation parts.
+18. The system must be created of plastic.
+19. The system must be made at a reputable manufacturing facility.
+20. The system must be completed within 3 weeks.

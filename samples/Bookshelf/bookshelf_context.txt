@@ -1,0 +1,5 @@
+The project is to design a system that helps people in wheelchairs retrieve
+books from the highest level of a bookshelf (at 6 feet or above). The device
+must be safe to use, convenient, and operate smoothly without damaging the
+books. The assembly should be relatively simple so that it can be installed on
+most existing bookshelves.
