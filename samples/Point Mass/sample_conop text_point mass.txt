@@ -1,0 +1,3 @@
+The system must be capable of performing two high-level operations: 
+1.	Displace the center of mass of the system from its origin to a set destination.
+2.	Return that point mass back to its origin. 

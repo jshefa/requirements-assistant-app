@@ -1,0 +1,2 @@
+The task is to design a system that should be able to receive an electrical control signal and move the center of mass of the system from an origin point to a destination point and back again to the origin point on board the International Space Station (ISS). The mechanical linkage between the system output and the point mass is assumed to be designed separately.
+
