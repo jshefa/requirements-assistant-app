@@ -4,11 +4,17 @@ This prototype reads a list of engineering requirements and checks each one agai
 
 ## How to install and run 
 
-1. Clone the repository on your local machine. You can do this by running the following command in your terminal:
+1. Extract the provided `requirements-assistant-app.zip` file to a location of your choice. 
+Alternatively, Clone the repository on your local machine. You can do this by running the following command in your terminal:
 ```
 git clone https://github.com/jshefa/requirements-assistant-app.git
 ``` 
-2. First ensure that Docker is installed and running. The Docker engine NEEDS to be running before the next step. You can install Docker with the following links:
+Then open a terminal and navigate into the extracted project folder, which is the folder that contains the `compose.yml` file:
+```
+cd path/to/requirements-assistant-app
+```
+
+2. Next, ensure that Docker is installed and running. The Docker engine NEEDS to be running before the next step. You can install Docker with the following links:
     - [Windows Install](https://docs.docker.com/desktop/setup/install/windows-install/)
     - [Mac Install](https://docs.docker.com/desktop/setup/install/mac-install/) 
 
@@ -63,7 +69,7 @@ instance item-33335 : req:Requirement [
 
 ## Troubleshooting Ollama issues
 
-The main cause of analysis failures is inadequate computer hardware. The default model, Gemma 3 12b, requires at least 8gb of RAM when running on the CPU. When running containerized, Docker gives 50% of your system's RAM to Ollama, so you will need at least 16GB of RAM with the default configuration. While it is possible to change Docker's allocation percentage, the most advisable thing to do on low end hardware is to switch the model to Gemma 3 4b. This significantly reduces memory usage and improves speed, however the analysis quality may be somewhat lower. To make this change, follow the following steps:
+The main cause of analysis failures is inadequate computer hardware. The default model, Gemma 3 12b, requires at least 8GB of RAM when running on the CPU. When running containerized, Docker gives 50% of your system's RAM to Ollama, so you will need at least 16GB of RAM with the default configuration. While it is possible to change Docker's allocation percentage, the most advisable thing to do on low end hardware is to switch the model to Gemma 3 4b. This significantly reduces memory usage and improves speed, however the analysis quality may be somewhat lower. To make this change, follow the following steps:
 
 1. Navigate to the Docker compose file `compose.yml`. It is in the project's main directory.
 2. Locate the following portion at the beginning of the file: `x-model: &ollama_model "gemma3:12b"`.
