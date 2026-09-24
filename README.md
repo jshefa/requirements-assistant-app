@@ -1,18 +1,15 @@
 # INCOSE Requirements Assistant
 
-This prototype reads a list of engineering requirements and checks each one against seven INCOSE quality criteria (Necessity, Appropriateness, Unambiguity, Completeness, Singularity, Correctness, and Conformance). It uses the user's choice of Claude, ChatGPT, or Ollama for analysis. A reviewer can then accept or fix each problem it finds and download a corrected Word document.
+This prototype reads a list of engineering requirements and checks each one against seven INCOSE quality criteria (Necessity, Appropriateness, Unambiguity, Completeness, Singularity, Correctness, and Conformance). It uses the user's choice of Anthropic, OpenAI, or Ollama for analysis. A reviewer can then accept or fix each problem it finds and download a corrected Word document.
 
 ## How to install and run 
 
 1. Extract the provided `requirements-assistant-app.zip` file to a location of your choice. 
+
 Alternatively, Clone the repository on your local machine. You can do this by running the following command in your terminal:
 ```
 git clone https://github.com/jshefa/requirements-assistant-app.git
 ``` 
-Then open a terminal and navigate into the extracted project folder, which is the folder that contains the `compose.yml` file:
-```
-cd path/to/requirements-assistant-app
-```
 
 2. Next, ensure that Docker is installed and running. The Docker engine NEEDS to be running before the next step. You can install Docker with the following links:
     - [Windows Install](https://docs.docker.com/desktop/setup/install/windows-install/)
@@ -36,7 +33,7 @@ docker compose --profile ollama-nvidia up --build
 ## Using the prototype
 
 1. First, run the prototype using the instructions above.
-2. Next, set your desired API key through the "Change API Keys" modal window. If you are running with Ollama, then this is unecessary. If you do not already have an API key, you can get them from the [Anthropic Dashboard](https://platform.claude.com/dashboard) or [OpenAI Dashboard](https://platform.openai.com/home).
+2. Next, set your desired API key through the "Change API Keys" modal window. If you are running with Ollama, then this is unnecessary. If you do not already have an API key, you can get them from the [Anthropic Dashboard](https://platform.claude.com/dashboard) or [OpenAI Dashboard](https://platform.openai.com/home).
 3. Choose the provider that you would like to run analysis on. 
 4. Choose your requirement file. The prototype supports both `.txt` and `.oml`, however ensure it fits the following format. 
 
@@ -48,7 +45,7 @@ FR2: The system shall return the payload from the destination to the origin.
 PR1: The system shall position the payload within +/- 2.5 mm in each Cartesian direction. 
 ```
 
-For .oml files, each requirement should be represented as a req:Requirement instance containing a name, ID, and natural-language description as followed:
+For .oml files, each requirement should be represented as a req:Requirement instance containing a name, ID, and natural-language description as follows:
 
 ```
 instance item-33334 : req:Requirement [
@@ -65,7 +62,7 @@ instance item-33335 : req:Requirement [
 ```
 
 5. Choose your context files if desired; this is optional. You can upload a separate .txt system context document, a .txt ConOps document, and a related ConOps image. 
-6. Click analyze when you are ready. The analysis time will depend on your number of requirements and provider. For a small requirements file of 10 requirements you can expect a runtime of under a minute, however a file with hundreds of requirements can take over 10 minutes. 
+6. Click Analyze when you are ready. The analysis time will depend on your number of requirements and provider. For a small requirements file of 10 requirements you can expect a runtime of under a minute, however a file with hundreds of requirements can take over 10 minutes. 
 
 ## Troubleshooting Ollama issues
 
