@@ -120,6 +120,7 @@ export default function UploadPage() {
       });
 
       setBarPct(100);
+      clearInterval(timerRef.current);
       const violated = res.data.violations_count;
       setProgress(
         `Done! ${violated} criteria violated across ${res.data.requirements_count} requirements${(res.data.failed_count && ` with ${res.data.failed_count} errors.`)}`,
