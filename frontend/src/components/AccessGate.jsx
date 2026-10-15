@@ -6,7 +6,8 @@ import {
   clearAccessCode,
   onAccessRejected,
 } from "../accessCode";
-import './AccessGate.css'
+import "./AccessGate.css";
+import { useConfig } from "../contexts/ConfigContext";
 
 /**
  * Blocks the app behind the shared access code when the server requires one.
@@ -16,6 +17,7 @@ import './AccessGate.css'
  * transparent and children render immediately.
  */
 export default function AccessGate({ children }) {
+  const { config } = useConfig();
   const [status, setStatus] = useState("checking"); // checking | locked | open
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -34,52 +36,43 @@ export default function AccessGate({ children }) {
   useEffect(() => {
     let cancelled = false;
 
-    const check = async (attemptsLeft = 20) => {
+    const check = async () => {
+      setStatus("checking");
+
+      if (!config.auth_required) {
+        clearAccessCode();
+        if (!cancelled) setStatus("open");
+        return;
+      }
+
+      const stored = getAccessCode();
+
+      if (!stored) {
+        if (!cancelled) setStatus("locked");
+        return;
+      }
+
       try {
-        const res = await axios.get("/api/config", { timeout: 5000 });
-        if (cancelled) return;
-
-        if (!res.data?.auth_required) {
+        if (await verify(stored)) {
+          if (!cancelled) setStatus("open");
+        } else if (!cancelled) {
           clearAccessCode();
-          setStatus("open");
-          return;
-        }
-
-        const stored = getAccessCode();
-        if (!stored) {
           setStatus("locked");
-          return;
-        }
-
-        try {
-          if (await verify(stored)) {
-            if (!cancelled) setStatus("open");
-          } else if (!cancelled) {
-            clearAccessCode();
-            setStatus("locked");
-          }
-        } catch {
-          // Rejected or unreachable — fall back to asking for the code.
-          if (!cancelled) {
-            clearAccessCode();
-            setStatus("locked");
-          }
         }
       } catch {
-        // Backend still waking up (Render free tier cold start) — retry.
-        if (cancelled || attemptsLeft <= 0) {
-          if (!cancelled) setStatus("locked");
-          return;
+        if (!cancelled) {
+          clearAccessCode();
+          setStatus("locked");
         }
-        setTimeout(() => check(attemptsLeft - 1), 2000);
       }
     };
 
     check();
+
     return () => {
       cancelled = true;
     };
-  }, [verify]);
+  }, [config.auth_required, verify]);
 
   // If the server later rejects the stored code, return to the gate.
   useEffect(

@@ -312,12 +312,15 @@ async def get_config():
 
     provider_labels = _get_provider_labels()
 
+    APP_MODE = os.getenv("APP_MODE", "prototype").lower(); 
+
     providers = [{"value": p, 
                   "label": provider_labels.get(p, p), 
                   "isAvailable": p in available, 
                   "requiresKey": p in PROVIDER_ENV_KEYS} for p in SUPPORTED_PROVIDERS]
     
     return {
+        "app_mode": APP_MODE,
         "provider": provider,
         "model_label": provider_labels.get(provider, provider),
         "providers": providers,
