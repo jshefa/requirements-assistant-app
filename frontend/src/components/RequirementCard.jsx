@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import CriterionCard from './CriterionCard'
 import './RequirementCard.css'
+import CriterionErrorCard from './CriteriaErrorCard'
 
 export default function RequirementCard({ requirement, feedbackState, onFeedbackChange }) {
   const evals = requirement.criteria_evaluations || []
@@ -86,36 +87,31 @@ export default function RequirementCard({ requirement, feedbackState, onFeedback
         </div>
       )}
 
-      {/* Criterion cards */}
-      {evals.length === 0 ? (
-        <p className="req-empty">
-          {requirement.error ? `Analysis error: ${requirement.error}` : 'No evaluations available.'}
-        </p>
-      ) : (
-        <div>
-          {evals.map((ev) => {
-            const key = `${requirement.req_id}-${ev.criterion_id}`
-            const feedback = feedbackState[key] || {
-              criterion_id: ev.criterion_id,
-              user_action: '',
-              // Satisfied criteria start blank: the box asks the reviewer to
-              // describe a change, so prefilling it with AI text would get
-              // submitted back as if the reviewer had written it.
-              user_text: ev.satisfied ? '' : (ev.suggested_replacement || ''),
-              notes: '',
-            }
-            return (
-              <CriterionCard
-                key={ev.criterion_id}
-                evaluation={ev}
-                originalText={requirement.original_text}
-                feedback={feedback}
-                onFeedbackChange={(fb) => onFeedbackChange(key, fb)}
-              />
-            )
-          })}
-        </div>
-      )}
+      <div>
+        {(requirement.error) && 
+        <CriterionErrorCard errorMsg={requirement.error}/> }
+        {evals.map((ev) => {
+          const key = `${requirement.req_id}-${ev.criterion_id}`
+          const feedback = feedbackState[key] || {
+            criterion_id: ev.criterion_id,
+            user_action: '',
+            // Satisfied criteria start blank: the box asks the reviewer to
+            // describe a change, so prefilling it with AI text would get
+            // submitted back as if the reviewer had written it.
+            user_text: ev.satisfied ? '' : (ev.suggested_replacement || ''),
+            notes: '',
+          }
+          return (
+            <CriterionCard
+              key={ev.criterion_id}
+              evaluation={ev}
+              originalText={requirement.original_text}
+              feedback={feedback}
+              onFeedbackChange={(fb) => onFeedbackChange(key, fb)}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }
