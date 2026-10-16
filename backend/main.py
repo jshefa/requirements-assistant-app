@@ -14,6 +14,7 @@ import asyncio
 from urllib.parse import urlparse
 import json
 from ai_analyzer import AnalysisContext
+from routers import study_sessions, study_materials
 
 from requirements_parser import parse_requirements, validate_requirements
 from ai_analyzer import analyze_all_requirements
@@ -72,6 +73,8 @@ def _get_ontology_service():
     return _ont_service
 
 app = FastAPI(title="INCOSE Requirements Analyzer API")
+app.include_router(study_sessions.router)
+app.include_router(study_materials.router)
 
 # CORS middleware for frontend
 app.add_middleware(

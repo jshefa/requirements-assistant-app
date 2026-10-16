@@ -18,3 +18,6 @@ python-dotenv==1.0.1
 # disables set analysis, which is why they must be declared explicitly.
 rdflib==7.6.0
 pyshacl==0.31.0
+
+psycopg==3.3.6
+psycopg-binary==3.3.6

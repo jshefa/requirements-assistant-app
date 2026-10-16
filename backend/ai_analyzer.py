@@ -317,9 +317,6 @@ def analyze_requirements_typed(requirements: List[Dict], criteria_type: str, con
                 else STRUCTURAL_CRITERIA)]
 
     call_context = None
-
-    if criteria_type == "structural":
-        return _error_result(requirements, "Example error here", criteria_order)
     
     try:
         if criteria_type == "structural":

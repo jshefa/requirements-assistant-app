@@ -1,0 +1,13 @@
+FR1: Displace: The System shall be able to move a point mass from an origin point to a fixed destination point as seen in Figure 1. Note 1: The path shown in the figure is notional; the actual path is to be determined. Note 2: Assume that a link between the system output and the point mass will be designed separately (by someone else) and will match the needs of your design. Note 3: The origin point is (X, Y, Z) = (0 mm, 0 mm, 101.6 mm) or [0”, 0”, 4”]. Note 4: The destination point is (X, Y, Z) = (71.84 mm, 0 mm, -71.84 mm) or [2.82”, 0”, -2.82”].
+FR2: Return: The System shall be able to move the point mass from the destination point back to the origin point.
+PR1: The system shall execute FR1 accurately with +/- 2.5mm [0.1”] accuracy in every Cartesian direction.
+PR2: The system shall execute FR2 accurately with +/- 2.5mm [0.1”] accuracy in every Cartesian direction.
+PR3: The System shall be able to execute FR1 in no more than 30 seconds.
+PR4: The System shall be able to execute FR1 in no less than 5 seconds.
+PR5: The System shall be able to execute FR2 in no more than 30 seconds.
+PR6: The System shall be able to execute FR2 in no less than 5 seconds.
+PR7: The system shall be able to move a point mass of 3.6 kg perpendicularly to normal gravity (9.81 m/s2).
+ER1: The System shall operate in an atmosphere comparable to that of Earth. Assume 21 degrees centigrade [70 degrees Fahrenheit], with low humidity, and pressurized to 100 kPA [750 mm Hg, 14.5 psi].
+ER2: The System shall not contribute any particulates (e.g. dust) to the ISS atmosphere.
+ER3: The System shall enclose all lubricated components to prevent lubricants from leaking into the atmosphere of the ISS.
+RR1: The System shall not use more than 1.5 Watt-hours to support all operations. Note: Assume a maximum of 1 minute of operations. 

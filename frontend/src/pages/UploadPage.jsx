@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ApiKeyModal from "../components/ApiKeyModal";
-import './UploadPage.css'
+import "./UploadPage.css";
+import { useConfig } from "../contexts/ConfigContext";
 
 function ProgressBar({ active, pct }) {
   if (!active) return null;
@@ -22,10 +23,12 @@ function ProgressBar({ active, pct }) {
 
 export default function UploadPage() {
   const navigate = useNavigate();
+  const { config, refreshConfig } = useConfig();
+
   const [provider, setProvider] = useState("");
-  const [providers, setProviders] = useState([]);
-  const [keyedProviders, setKeyedProviders] = useState([]);
-  const [configLoaded, setConfigLoaded] = useState(false);
+  const allProviders = config?.providers ?? [];
+  const providers = allProviders.filter((p) => p.isAvailable);
+  const keyedProviders = allProviders.filter((p) => p.requiresKey);
 
   const [reqFile, setReqFile] = useState(null);
   const [ctxFile, setCtxFile] = useState(null);
@@ -40,36 +43,17 @@ export default function UploadPage() {
   const timerRef = useRef(null);
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
 
-  async function fetchConfig() {
-    let cancelled = false;
-    const poll = async (attemptsLeft = 20) => {
-      try {
-        const res = await axios.get("/api/config", { timeout: 2000 });
-        if (cancelled) return;
-        const allProviders = res.data.providers;
-        setKeyedProviders(allProviders.filter((p) => p.requiresKey));
-        setProviders(allProviders.filter((p) => p.isAvailable));
-        setProvider(res.data.provider || "");
-        setConfigLoaded(true);
-      } catch {
-        if (cancelled || attemptsLeft <= 0) return;
-        setTimeout(() => poll(attemptsLeft - 1), 2000);
-      }
-    };
-    poll();
-    return () => {
-      cancelled = true;
-    };
-  }
-
-  // Single config fetch on mount — retries until backend is ready.
   useEffect(() => {
-    fetchConfig();
-  }, []); // ← empty deps: runs once, never again
+    if (config) {
+      setProvider(
+        (current) => current || config.provider || providers[0]?.value || "",
+      );
+    }
+  }, [config]);
 
   // No configured provider means the deployment is missing its API keys —
   // an operator problem, not something the user can fix by typing a key.
-  const serviceReady = !configLoaded || providers.length > 0;
+  const serviceReady = providers.length > 0;
 
   // Progress bar animation
   useEffect(() => {
@@ -123,7 +107,7 @@ export default function UploadPage() {
       clearInterval(timerRef.current);
       const violated = res.data.violations_count;
       setProgress(
-        `Done! ${violated} criteria violated across ${res.data.requirements_count} requirements${(res.data.failed_count && ` with ${res.data.failed_count} errors.`)}`,
+        `Done! ${violated} criteria violated across ${res.data.requirements_count} requirements${res.data.failed_count ? ` with ${res.data.failed_count} errors.` : ""}`,
       );
       setTimeout(() => setSessionResult(res.data.session_id), 400);
     } catch (err) {
@@ -177,7 +161,9 @@ export default function UploadPage() {
                 ))}
               </div>
             </div>
-          ) : (providers.length == 1) && (<p>Using {providers[0].label}</p>)}
+          ) : (
+            providers.length == 1 && <p>Using {providers[0].label}</p>
+          )}
 
           {!serviceReady && (
             <div className="error-msg">
@@ -196,10 +182,11 @@ export default function UploadPage() {
               disabled={loading}
             />
             <p className="hint">
-              .txt format: "1. The system shall...", "REQ-001: The system shall...",
-              "MR-C1.1: The system shall..."
+              .txt format: "1. The system shall...", "REQ-001: The system
+              shall...", "MR-C1.1: The system shall..."
               <br />
-              .oml format: req:Requirement, tlo:hasName, tlo:hasID, tlo:hasNaturalLanguageDescription
+              .oml format: req:Requirement, tlo:hasName, tlo:hasID,
+              tlo:hasNaturalLanguageDescription
             </p>
           </div>
 
@@ -221,7 +208,7 @@ export default function UploadPage() {
 
           {/* ConOps File*/}
           <div className="form-group">
-            <label htmlFor="ctx-file">ConOps File (.txt, optional)</label>
+            <label htmlFor="conops-file">ConOps File (.txt, optional)</label>
             <input
               id="conops-file"
               type="file"
@@ -233,7 +220,9 @@ export default function UploadPage() {
 
           {/* ConOps Img */}
           <div className="form-group">
-            <label htmlFor="ctx-file">ConOps Image (.png, .jpg, .webp, optional)</label>
+            <label htmlFor="conops-image">
+              ConOps Image (.png, .jpg, .webp, optional)
+            </label>
             <input
               id="conops-image"
               type="file"
@@ -278,7 +267,7 @@ export default function UploadPage() {
       {isKeyModalOpen && (
         <ApiKeyModal
           onClose={() => setIsKeyModalOpen(false)}
-          onKeySaved={fetchConfig}
+          onKeySaved={refreshConfig}
           providers={keyedProviders}
         />
       )}

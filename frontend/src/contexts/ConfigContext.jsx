@@ -43,8 +43,13 @@ export function ConfigProvider({ children }) {
     };
   }, []);
 
+  async function refreshConfig() {
+    const res = await axios.get("/api/config", { timeout: 5000 });
+    setConfig(res.data);
+  }
+
   return (
-    <ConfigContext.Provider value={{ config, loading, error }}>
+    <ConfigContext.Provider value={{ config, loading, error, refreshConfig }}>
       {children}
     </ConfigContext.Provider>
   );
