@@ -68,12 +68,12 @@ export default function StudySession() {
     }
 
     case "manual_review":
-      return <ManualReview />;
+      return <ManualReview onContinue={handleAdvance} />;
 
     case "ai_review":
       return <div>to do</div>;
 
-    case "complete":
+    case "completed":
       return <CompletionPage />;
 
     default:

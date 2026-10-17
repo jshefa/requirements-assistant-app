@@ -1,0 +1,113 @@
+.criterion-option {
+  border: 1px solid var(--color-border, #d9dfe6);
+  border-radius: var(--radius-md, 10px);
+  background: var(--color-surface, #fff);
+  overflow: hidden;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.criterion-option--selected {
+  border-color: var(--color-primary, #3767b1);
+  background: var(--color-surface, #fff);
+}
+
+.criterion-option__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3, 12px);
+  padding: var(--space-4, 16px);
+  cursor: pointer;
+}
+
+.criterion-option__heading input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin-top: 2px;
+  accent-color: var(--color-primary, #3767b1);
+  cursor: pointer;
+}
+
+.criterion-option__heading input[type="checkbox"]:disabled {
+  cursor: wait;
+}
+
+.criterion-option__body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.criterion-option__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.criterion-option__code {
+  color: var(--color-primary, #3767b1);
+  font-weight: 700;
+  font-size: 0.83rem;
+}
+
+.criterion-option__name {
+  font-weight: 650;
+  color: var(--color-text, #192536);
+}
+
+.criterion-option__description {
+  font-size: 0.91rem;
+  color: var(--color-text-secondary, #596678);
+  line-height: 1.55;
+}
+
+.criterion-option__reasoning {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 var(--space-4, 16px) var(--space-4, 16px)
+    calc(var(--space-4, 16px) + 30px);
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border, #d9dfe6);
+}
+
+.criterion-option__reasoning label {
+  color: var(--color-text, #192536);
+  font-size: 0.87rem;
+  font-weight: 600;
+}
+
+.criterion-option__reasoning textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 88px;
+  padding: 11px 12px;
+  resize: vertical;
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: var(--radius-sm, 7px);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #192536);
+  font: inherit;
+  line-height: 1.5;
+}
+
+.criterion-option__reasoning textarea:focus-visible {
+  outline: 2px solid var(--color-primary, #3767b1);
+  outline-offset: 2px;
+}
+
+.criterion-option__hint {
+  color: var(--color-text-secondary, #596678);
+  font-size: 0.77rem;
+}
+
+@media (max-width: 550px) {
+  .criterion-option__reasoning {
+    margin-left: var(--space-4, 16px);
+  }
+}
