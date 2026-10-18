@@ -104,7 +104,7 @@ export default function ContextViewer({
           {materials.conops_image_url && (
             <img
               className="study-reading-image"
-              src={`${import.meta.env.VITE_API_URL || ""}materials.conops_image_url`}
+              src={`${import.meta.env.VITE_API_URL || ""}${materials.conops_image_url}`}
               alt="Concept of Operations diagram"
             />
           )}
