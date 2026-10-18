@@ -32,3 +32,7 @@ def get_conops_image():
         STUDY_DIR / "conops_image.png",
         media_type="image/png"
     )
+
+@router.get("/analysis-survey")
+def get_analysis_survey():
+    return ANALYSIS_SURVEY

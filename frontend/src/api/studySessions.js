@@ -17,3 +17,8 @@ export async function advanceStudySession(sessionId) {
   const response = await axios.post(`/api/study/sessions/${sessionId}/advance`);
   return response.data;
 }
+
+export async function getStudyAnalysis(sessionId) {
+  const response = await axios.get(`/api/study/sessions/${sessionId}/analysis`);
+  return response.data;
+}

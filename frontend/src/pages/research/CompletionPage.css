@@ -1,0 +1,36 @@
+.completion-page {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+
+.completion-card {
+  width: min(100%, 520px);
+  padding: 2.5rem;
+  border: 1px solid #d9dde3;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.completion-card h1 {
+  margin-top: 0;
+}
+
+.completion-card p {
+  line-height: 1.6;
+}
+
+.completion-home-link {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  background: #2457a7;
+  color: white;
+  text-decoration: none;
+}
+
+.completion-home-link:hover {
+  background: #194483;
+}

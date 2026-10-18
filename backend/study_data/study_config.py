@@ -1,6 +1,7 @@
 STUDY_CONFIG = {
-  "min_read_minutes": 1,
-  "timed_read_groups": ["ai_only", "grad_ai_only"]
+  "min_read_minutes": .1,
+  "timed_read_groups": ["ai_only", "grad_ai_only"],
+  "MATERIALS_USED": "point-mass-v1"
 }
 
 ANALYSIS_SURVEY = {

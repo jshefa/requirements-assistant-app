@@ -6,6 +6,7 @@ import ManualReview from "./ManualReview";
 import CompletionPage from "./CompletionPage";
 import { advanceStudySession, getStudySession } from "../../api/studySessions";
 import IntroPage from "./IntroPage";
+import ResearchAiReview from "./ResearchAiReview";
 
 export default function StudySession() {
   const { sessionId } = useParams();
@@ -49,7 +50,7 @@ export default function StudySession() {
       return <IntroPage onContinue={handleAdvance} />;
 
     case "confidence":
-      return <ConfidenceSurvey />;
+      return <ConfidenceSurvey onContinue={handleAdvance} />;
 
     case "reading": {
       let minReadMinutes = config.timed_read_groups.includes(
@@ -71,7 +72,9 @@ export default function StudySession() {
       return <ManualReview onContinue={handleAdvance} />;
 
     case "ai_review":
-      return <div>to do</div>;
+      return (
+        <ResearchAiReview sessionId={sessionId} onContinue={handleAdvance} />
+      );
 
     case "completed":
       return <CompletionPage />;

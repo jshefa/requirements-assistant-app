@@ -1,10 +1,12 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 
 from database import get_connection
 from study_data.study_config import STUDY_CONFIG
+
+from study_analysis import research_analysis
 
 router = APIRouter(prefix="/api/study/sessions", tags=["study-sessions"])
 
@@ -15,8 +17,8 @@ class SessionCreate(BaseModel):
 SECTION_GROUPS = {
     "undergrad_1": "human_ai",
     "undergrad_2": "ai_only",
-    "grad_1": "grad_ai_only",
-    "grad_2": "grad_human_ai"
+    "grad_1": "grad_human_ai",
+    "grad_2": "grad_ai_only"
 }
 
 STAGE_FLOWS = {
@@ -56,7 +58,7 @@ def _get_experiment_group(class_section: str) -> str:
     return group
 
 @router.post("/")
-def create_session(data: SessionCreate):
+def create_session(data: SessionCreate, background_tasks: BackgroundTasks):
     experiment_group = _get_experiment_group(data.class_section)
 
     with get_connection() as conn:
@@ -82,6 +84,9 @@ def create_session(data: SessionCreate):
             session["id"],
             session["current_stage"]
         ))
+
+    background_tasks.add_task(research_analysis, session["id"])
+
     return session
 
 @router.get("/{session_id}")
@@ -203,4 +208,50 @@ def advance_section(session_id: UUID):
     return {
         "session_id": session_id,
         "current_stage": next_stage
+    }
+
+@router.get("/{session_id}/analysis")
+def get_study_analysis(session_id: UUID):
+    with get_connection() as conn:
+        session = conn.execute(
+            "SELECT id FROM study_sessions WHERE id = %s",
+            (session_id,),
+        ).fetchone()
+
+        if session is None:
+            raise HTTPException(404, "Session not found")
+
+        analysis = conn.execute("""
+            SELECT id, status, result
+            FROM ai_analyses
+            WHERE session_id = %s
+            ORDER BY started_at DESC, id DESC
+            LIMIT 1
+        """, (session_id,)).fetchone()
+
+    if analysis is None:
+        return {
+            "analysis_id": None,
+            "status": "pending",
+            "result": None
+        }
+
+    if analysis["status"] == "failed":
+        return {
+            "analysis_id": analysis["id"],
+            "status": "failed",
+            "result": None,
+            "error": (analysis["result"] or {}).get(
+                "error", "AI analysis failed."
+            )
+        }
+
+    return {
+        "analysis_id": analysis["id"],
+        "status": analysis["status"],
+        "result": (
+            analysis["result"]
+            if analysis["status"] == "completed"
+            else None
+        )
     }
