@@ -8,6 +8,10 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import { installAccessCodeInterceptors } from "./accessCode";
 import { ConfigProvider } from "./contexts/ConfigContext.jsx";
+import axios from "axios";
+
+// sets the backend url
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "";
 
 // Must run before any component issues a request, so every call carries the code.
 installAccessCodeInterceptors();

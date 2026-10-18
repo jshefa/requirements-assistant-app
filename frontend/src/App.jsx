@@ -97,7 +97,7 @@ export default function App() {
   if (error) return <div>{String(error)}</div>;
 
   if (!["prototype", "research"].includes(config?.app_mode))
-    return <div>Invalid App Mode</div>;
+    return <div>Invalid App Mode or Backend Offline</div>;
 
   return (
     <BrowserRouter>
