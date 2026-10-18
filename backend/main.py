@@ -88,7 +88,7 @@ app.include_router(study_logging.router)
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://stse-research-experiment.stse-research.workers.dev/", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
