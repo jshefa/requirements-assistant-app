@@ -43,6 +43,8 @@ function sameDecision(a, b) {
 export default function ResearchAiReview({
   sessionId: providedSessionId,
   onContinue,
+  onAnalysisReady,
+  autoAdvance = false,
 }) {
   const { sessionId: routeSessionId } = useParams();
   const sessionId = providedSessionId ?? routeSessionId;
@@ -51,7 +53,7 @@ export default function ResearchAiReview({
   const [analysisId, setAnalysisId] = useState(null);
   const [status, setStatus] = useState("pending");
   const [feedbackState, setFeedbackState] = useState({});
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(0); // req being displayed
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [pendingSaves, setPendingSaves] = useState(0);
@@ -62,6 +64,7 @@ export default function ResearchAiReview({
   const saveQueueRef = useRef(Promise.resolve());
   const logQueueRef = useRef(Promise.resolve());
   const navigatingRef = useRef(false);
+  const timeoutAttemptedRef = useRef(false);
 
   useEffect(() => {
     if (!sessionId) {
@@ -71,7 +74,7 @@ export default function ResearchAiReview({
     }
 
     let active = true;
-    let pollTimer;
+    let pollTimer; // polls to check if analysis is ready until it is
 
     async function loadAnalysis() {
       try {
@@ -88,7 +91,7 @@ export default function ResearchAiReview({
         if (data.status === "failed") {
           setError(
             data.error ||
-              "The AI analysis failed. Please notify the study administrator.",
+              "The AI analysis failed. Please notify the professor.",
           );
           setLoading(false);
           return;
@@ -101,7 +104,7 @@ export default function ResearchAiReview({
           throw new Error("The server returned an invalid AI analysis.");
         }
 
-        // Restore decisions so participants can safely refresh the page.
+        // restore decisions so participants can refresh without losing progress
         const savedDecisions = await getAIDecisions(sessionId);
         if (!active) return;
 
@@ -144,6 +147,7 @@ export default function ResearchAiReview({
         setFeedbackState(restored);
         setAnalysis(data.result);
         setAnalysisId(data.analysis_id);
+        onAnalysisReady?.(data.result.timestamp || new Date().toISOString());
 
         const firstIncomplete = data.result.requirements.findIndex((req) =>
           (req.criteria_evaluations || []).some(
@@ -168,7 +172,8 @@ export default function ResearchAiReview({
     };
   }, [sessionId]);
 
-  // Preserve the order of interaction events, and finish pending logs before advancing stages.
+  // logs events (clicking around, not feedback changes)
+  // preserves the logging order of events, and finish pending logs before advancing stages.
   function logEvent(event) {
     const job = logQueueRef.current
       .catch(() => {})
@@ -178,6 +183,7 @@ export default function ResearchAiReview({
     return job;
   }
 
+  // logs tab in/out and refreshes
   useEffect(() => {
     if (!sessionId) return;
     function visibilityChanged() {
@@ -197,6 +203,7 @@ export default function ResearchAiReview({
       document.removeEventListener("visibilitychange", visibilityChanged);
   }, [sessionId]);
 
+  // saves feedback change if there was an actual change
   function queueSave(key, requirementId, criterionId, feedback) {
     const next = decisionFromFeedback(feedback);
     if (!next || !analysisId) return Promise.resolve();
@@ -233,7 +240,7 @@ export default function ResearchAiReview({
     feedbackRef.current = { ...feedbackRef.current, [key]: feedback };
     setFeedbackState(feedbackRef.current);
 
-    // Button selections are saved immediately. Suggestions and text edits wait for blur/navigation.
+    // button selections are logged immediately. suggestions and text edits saved on blur/navigation to avoid unecessary logs
     if (
       feedback.user_action !== previous?.user_action &&
       feedback.user_action !== "suggest"
@@ -290,7 +297,7 @@ export default function ResearchAiReview({
     ).catch(() => {});
   }
 
-  async function flushUnsaved() {
+  async function flushUnsaved(timedOut = false) {
     // Also catches edited text that has not been blurred yet, or a failed save.
     for (const req of analysis.requirements) {
       for (const ev of req.criteria_evaluations || []) {
@@ -300,6 +307,7 @@ export default function ResearchAiReview({
           ["suggest", "modify"].includes(feedback?.user_action) &&
           !feedback.user_text?.trim()
         ) {
+          if (timedOut) continue;
           setError(
             `Please enter text for ${req.req_id} / ${ev.criterion_id}, or choose a different action.`,
           );
@@ -328,6 +336,7 @@ export default function ResearchAiReview({
     return true;
   }
 
+  // move to next/previous requirement
   async function move(direction) {
     if (navigatingRef.current) return;
     navigatingRef.current = true;
@@ -346,26 +355,29 @@ export default function ResearchAiReview({
     }
   }
 
-  async function finish() {
+  // submits review, but only if every violation has been reviewed
+  async function finish(timedOut = false) {
     if (navigatingRef.current) return;
     navigatingRef.current = true;
     setBusy(true);
     try {
-      const firstIncomplete = analysis.requirements.findIndex((req) =>
-        (req.criteria_evaluations || []).some((ev) => {
-          if (ev.satisfied) return false;
-          const key = `${req.req_id}-${ev.criterion_id}`;
-          return !decisionFromFeedback(feedbackRef.current[key]);
-        }),
-      );
-      if (firstIncomplete !== -1) {
-        setIndex(firstIncomplete);
-        setError(
-          "Please accept, reject, or substitute every AI-flagged violation before finishing.",
+      if (!timedOut) {
+        const firstIncomplete = analysis.requirements.findIndex((req) =>
+          (req.criteria_evaluations || []).some((ev) => {
+            if (ev.satisfied) return false;
+            const key = `${req.req_id}-${ev.criterion_id}`;
+            return !decisionFromFeedback(feedbackRef.current[key]);
+          }),
         );
-        return;
+        if (firstIncomplete !== -1) {
+          setIndex(firstIncomplete);
+          setError(
+            "Please accept, reject, or substitute every AI-flagged violation before finishing.",
+          );
+          return;
+        }
       }
-      if (!(await flushUnsaved())) return;
+      if (!(await flushUnsaved(timedOut))) return;
       await logQueueRef.current.catch(() => {});
       if (!onContinue)
         throw new Error("Study continuation handler was not provided.");
@@ -377,6 +389,21 @@ export default function ResearchAiReview({
       setBusy(false);
     }
   }
+
+  // Once time expires, save any completed decisions and advance automatically.
+  useEffect(() => {
+    if (
+      !autoAdvance ||
+      loading ||
+      busy ||
+      !analysis ||
+      timeoutAttemptedRef.current
+    )
+      return;
+
+    timeoutAttemptedRef.current = true;
+    void finish(true);
+  }, [autoAdvance, loading, busy, analysis]);
 
   if (loading)
     return (
@@ -462,7 +489,16 @@ export default function ResearchAiReview({
           >
             ← Previous
           </button>
-          {index < requirements.length - 1 ? (
+          {autoAdvance ? (
+            <button
+              type="button"
+              className="btn-primary manual-review__next"
+              disabled={busy}
+              onClick={() => finish(true)}
+            >
+              {busy ? "Finishing..." : "Continue (time expired) →"}
+            </button>
+          ) : index < requirements.length - 1 ? (
             <button
               type="button"
               className="btn-primary manual-review__next"
@@ -476,7 +512,7 @@ export default function ResearchAiReview({
               type="button"
               className="btn-primary manual-review__next"
               disabled={busy}
-              onClick={finish}
+              onClick={() => finish()}
             >
               {busy ? "Finishing..." : "Finish AI review →"}
             </button>

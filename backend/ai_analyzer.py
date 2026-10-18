@@ -177,10 +177,21 @@ def _call_ai(user_prompt: str, system_prompt: str, num_requirements: int, provid
                     "data": img_b64
                 }
             })
-        user_content.append({
-                            "type": "text",
-                            "text": user_prompt,
-                        })
+
+        # i have decided to only cache the user prompt when in user mode. For prototype mode, it is unlikely
+        # that the same context and requirement will be used; with the exception of large batched datasets. 
+        # for research mode however, only one dataset will be used, so it makes sense to cache the entire prompt. 
+        if os.getenv("APP_MODE") == "research":
+            user_content.append({
+                "type": "text",
+                "text": user_prompt,
+                "cache_control": {"type": "ephemeral"}
+            })
+        else:
+            user_content.append({
+                                "type": "text",
+                                "text": user_prompt,
+                            })
         
         client = anthropic.Anthropic(api_key=key)
         response = client.messages.create(
@@ -194,6 +205,27 @@ def _call_ai(user_prompt: str, system_prompt: str, num_requirements: int, provid
                 }
             ],
             messages=[{"role": "user", "content": user_content}],
+        )
+
+        usage = response.usage
+
+        input_tokens = usage.input_tokens or 0
+        output_tokens = usage.output_tokens or 0
+        cache_write = usage.cache_creation_input_tokens or 0
+        cache_read = usage.cache_read_input_tokens or 0
+
+        total_input = input_tokens + cache_write + cache_read
+
+        print(
+            f"\n--- Claude API Usage ---\n"
+            f"Model: {response.model}\n"
+            f"Uncached input tokens: {input_tokens:,}\n"
+            f"Output tokens: {output_tokens:,}\n"
+            f"Cache write tokens: {cache_write:,}\n"
+            f"Cache read tokens: {cache_read:,}\n"
+            f"Total input tokens: {total_input:,}\n"
+            f"Cache hit: {'Yes' if cache_read > 0 else 'No'}\n",
+            flush=True,
         )
 
         # this avoids thinking block 

@@ -184,6 +184,7 @@ export default function CriterionCard({
           </button>
           {showSatisfiedEdit && (
             <input
+              id={`suggestion-${criterion_id}`}
               type="text"
               className="text-input disclosure-field"
               value={feedback.user_text || ""}

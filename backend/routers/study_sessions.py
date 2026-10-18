@@ -74,8 +74,6 @@ def create_session(data: SessionCreate, background_tasks: BackgroundTasks):
             experiment_group
         )).fetchone()
 
-        print("5. Session inserted!", flush=True)
-
         conn.execute("""
             INSERT INTO study_stage_history
                 (session_id, stage)
@@ -255,3 +253,28 @@ def get_study_analysis(session_id: UUID):
             else None
         )
     }
+
+@router.post("/{session_id}/retry-analysis")
+def retry_analysis(session_id: UUID, background_tasks: BackgroundTasks):
+    with get_connection() as conn:
+        session = conn.execute(
+            "SELECT id FROM study_sessions WHERE id = %s",
+            (session_id,),
+        ).fetchone()
+        if session is None:
+            raise HTTPException(404, "Session not found")
+        analysis = conn.execute("""
+                    SELECT id, status
+                    FROM ai_analyses
+                    WHERE session_id = %s
+                    ORDER BY started_at DESC, id DESC
+                    LIMIT 1
+                """, (session_id,)).fetchone()
+    if analysis is None or analysis["status"] != "failed":
+        raise HTTPException(status_code=409, detail="Analysis already in progress")
+    
+    background_tasks.add_task(research_analysis, session["id"])
+    return {"status": "queued", "message": "AI analysis retry scheduled"}
+        
+        
+    

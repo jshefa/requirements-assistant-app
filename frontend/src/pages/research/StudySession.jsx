@@ -7,12 +7,16 @@ import CompletionPage from "./CompletionPage";
 import { advanceStudySession, getStudySession } from "../../api/studySessions";
 import IntroPage from "./IntroPage";
 import ResearchAiReview from "./ResearchAiReview";
+import StageTimer from "../../components/research/StageTimer";
 
 export default function StudySession() {
   const { sessionId } = useParams();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [timedOutStage, setTimedOutStage] = useState(null);
+  const [aiReadyAt, setAiReadyAt] = useState(null);
 
   useEffect(() => {
     async function loadSession() {
@@ -38,6 +42,8 @@ export default function StudySession() {
     await advanceStudySession(sessionId);
     const updatedSession = await getStudySession(sessionId);
     setSession(updatedSession);
+    setTimedOutStage(null);
+    setAiReadyAt(null);
   }
 
   if (loading) return <div>Loading...</div>;
@@ -69,13 +75,48 @@ export default function StudySession() {
     }
 
     case "manual_review":
-      return <ManualReview onContinue={handleAdvance} />;
-
-    case "ai_review":
       return (
-        <ResearchAiReview sessionId={sessionId} onContinue={handleAdvance} />
+        <>
+          <StageTimer
+            startedAt={session.stage_started_at}
+            durationMinutes={config.manual_review_max_minutes}
+            graceMinutes={config.timer_grace_period}
+            onExpired={() => setTimedOutStage("manual_review")}
+          />
+          <ManualReview
+            sessionId={sessionId}
+            onContinue={handleAdvance}
+            autoAdvance={timedOutStage === "manual_review"}
+          />
+        </>
       );
 
+    case "ai_review": {
+      const stageStartMs = new Date(session.stage_started_at).getTime();
+      const readyMs = aiReadyAt ? new Date(aiReadyAt).getTime() : NaN;
+      const timerStart =
+        aiReadyAt && Number.isFinite(readyMs)
+          ? new Date(Math.max(stageStartMs, readyMs)).toISOString()
+          : null;
+      return (
+        <>
+          {timerStart && (
+            <StageTimer
+              startedAt={timerStart}
+              durationMinutes={config.ai_review_max_minutes}
+              graceMinutes={config.timer_grace_period}
+              onExpired={() => setTimedOutStage("ai_review")}
+            />
+          )}
+          <ResearchAiReview
+            sessionId={sessionId}
+            onContinue={handleAdvance}
+            onAnalysisReady={(timestamp) => setAiReadyAt(timestamp)}
+            autoAdvance={timedOutStage === "ai_review"}
+          />
+        </>
+      );
+    }
     case "completed":
       return <CompletionPage />;
 

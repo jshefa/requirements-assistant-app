@@ -66,6 +66,7 @@ function errorMessage(error) {
 export default function ManualReview({
   sessionId: providedSessionId,
   onContinue,
+  autoAdvance = false,
 }) {
   const { sessionId: routeSessionId } = useParams();
   const sessionId = providedSessionId ?? routeSessionId;
@@ -87,6 +88,7 @@ export default function ManualReview({
   // Serialize writes to keep append-only answer history in the correct order.
   const saveQueueRef = useRef(Promise.resolve());
   const navigatingRef = useRef(false);
+  const timeoutAttemptedRef = useRef(false);
 
   useEffect(() => {
     if (!sessionId) {
@@ -295,28 +297,34 @@ export default function ManualReview({
     }
   }
 
-  async function finish() {
+  async function finish(timedOut = false) {
     if (navigatingRef.current) return;
     navigatingRef.current = true;
     setBusy(true);
     try {
-      if (!(await flushRequirement(requirements[index].id))) return;
+      if (timedOut) {
+        for (const requirement of requirements) {
+          if (!(await flushRequirement(requirement.id))) return;
+        }
+      } else {
+        if (!(await flushRequirement(requirements[index].id))) return;
 
-      const firstIncomplete = requirements.findIndex(
-        (requirement) =>
-          !hasCompleteResponse(answersRef.current, requirement.id),
-      );
-      if (firstIncomplete !== -1) {
-        const incompleteId = requirements[firstIncomplete].id;
-        const missing = missingReasoning(answersRef.current, incompleteId);
-        setIndex(firstIncomplete);
-        setConflict("");
-        setError(
-          missing.length
-            ? `Requirement ${incompleteId}: Please provide reasoning for each selected violation (${missing.join(", ")}).`
-            : `Requirement ${incompleteId}: Please select A1 or at least one violated criterion before continuing.`,
+        const firstIncomplete = requirements.findIndex(
+          (requirement) =>
+            !hasCompleteResponse(answersRef.current, requirement.id),
         );
-        return;
+        if (firstIncomplete !== -1) {
+          const incompleteId = requirements[firstIncomplete].id;
+          const missing = missingReasoning(answersRef.current, incompleteId);
+          setIndex(firstIncomplete);
+          setConflict("");
+          setError(
+            missing.length
+              ? `Requirement ${incompleteId}: Please provide reasoning for each selected violation (${missing.join(", ")}).`
+              : `Requirement ${incompleteId}: Please select A1 or at least one violated criterion before continuing.`,
+          );
+          return;
+        }
       }
 
       if (!onContinue) {
@@ -331,6 +339,22 @@ export default function ManualReview({
       setBusy(false);
     }
   }
+
+  // When the time limit expires, save any partial answers and advance once.
+  useEffect(() => {
+    if (
+      !autoAdvance ||
+      loading ||
+      busy ||
+      !requirements.length ||
+      !survey ||
+      timeoutAttemptedRef.current
+    )
+      return;
+
+    timeoutAttemptedRef.current = true;
+    void finish(true);
+  }, [autoAdvance, loading, busy, requirements.length, survey]);
 
   if (loading)
     return (
@@ -486,7 +510,16 @@ export default function ManualReview({
           >
             ← Previous
           </button>
-          {index < requirements.length - 1 ? (
+          {autoAdvance ? (
+            <button
+              type="button"
+              className="btn-primary manual-review__next"
+              onClick={() => finish(true)}
+              disabled={busy}
+            >
+              {busy ? "Finishing..." : "Continue (time expired) →"}
+            </button>
+          ) : index < requirements.length - 1 ? (
             <button
               type="button"
               className="btn-primary manual-review__next"
@@ -499,7 +532,7 @@ export default function ManualReview({
             <button
               type="button"
               className="btn-primary manual-review__next"
-              onClick={finish}
+              onClick={() => finish()}
               disabled={busy}
             >
               Finish manual review →
