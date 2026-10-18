@@ -139,7 +139,7 @@ async def _available_providers() -> list:
 
 # Paths that must stay reachable without a code: the config probe the gate
 # itself depends on, and the code-verification endpoint.
-_OPEN_API_PATHS = {'/api', '/api/config', '/api/access/verify'}
+_OPEN_API_PATHS = {'/api', '/api/config', '/api/access/verify', '/api/study/materials/conops-image'}
 
 # Per-IP failed-attempt tracking, so a short shared code can't be brute forced.
 _MAX_FAILED_ATTEMPTS = 10
