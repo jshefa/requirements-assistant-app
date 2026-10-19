@@ -38,6 +38,7 @@ export default function StudyReviewLayout({
             <h1>{title}</h1>
             <p className="study-review-layout__description">{description}</p>
           </div>
+          {timer && <div className="study-review-layout__timer">{timer}</div>}
           <div className="study-review-layout__progress-summary">
             <strong>Requirement {requirementIndex} of {requirementCount}</strong>
             <span>{progressText}</span>
@@ -57,7 +58,6 @@ export default function StudyReviewLayout({
           </div>
         )}
 
-        {timer && <div className="study-review-layout__timer">{timer}</div>}
       </header>
 
       <section

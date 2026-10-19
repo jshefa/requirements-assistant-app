@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import "./StageTimer.css";
 
 function formatTime(seconds) {
@@ -14,6 +14,7 @@ export default function StageTimer({
   onExpired,
 }) {
   const [now, setNow] = useState(() => Date.now());
+  const tooltipId = useId();
   const expiredOnce = useRef(false);
   const onExpiredRef = useRef(onExpired);
   onExpiredRef.current = onExpired;
@@ -51,32 +52,49 @@ export default function StageTimer({
       : mainMs - elapsedMs;
   const seconds = Math.ceil(remainingMs / 1000);
 
+  const tooltipTitle = expired
+    ? "Review time ended"
+    : inGrace
+      ? "Additional time"
+      : "Time remaining";
+  const tooltipMessage = expired
+    ? "Saving your work and moving to the next stage…"
+    : inGrace
+      ? "You're in the grace period. Please finish up. You'll move on automatically when this countdown reaches zero."
+      : graceMinutes > 0
+        ? `When this countdown reaches zero, you'll have ${graceMinutes} additional minute${graceMinutes === 1 ? "" : "s"} to finish before moving on automatically.`
+        : "You'll move on automatically when this countdown reaches zero.";
+
   return (
     <div
       className={`stage-timer${inGrace || expired ? " stage-timer--warning" : ""}`}
       role="status"
+      tabIndex={0}
+      aria-describedby={tooltipId}
     >
-      <div className="stage-timer__description">
-        <strong>
-          {expired
-            ? "Review time ended"
-            : inGrace
-              ? "Additional time"
-              : "Time remaining"}
-        </strong>
-        <span>
-          {expired
-            ? "Saving your work and moving to the next stage…"
-            : inGrace
-              ? "Please finish up. You'll move on automatically when this reaches zero."
-              : `After this, you'll have ${graceMinutes} extra minute${graceMinutes === 1 ? "" : "s"} to finish.`}
-        </span>
-      </div>
+      <svg
+        className="stage-timer__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </svg>
       <span
         className="stage-timer__countdown"
         aria-label={`${seconds} seconds remaining`}
       >
         {formatTime(seconds)}
+      </span>
+      <span className="stage-timer__tooltip" id={tooltipId} role="tooltip">
+        <strong>{tooltipTitle}</strong>
+        <span>{tooltipMessage}</span>
       </span>
     </div>
   );
