@@ -38,6 +38,10 @@ export default function IntroPage({ onContinue }) {
             Only begin when you are ready to complete the study without
             interruption.
           </li>
+          <li>
+            For some sections of this study, you will have a time limit. Please
+            ensure keep a steady pace in order to finish on time.
+          </li>
         </ul>
 
         <p>When you are ready, click the button below to begin.</p>

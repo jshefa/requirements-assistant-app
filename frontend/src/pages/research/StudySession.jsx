@@ -38,8 +38,9 @@ export default function StudySession() {
   }, [sessionId]);
 
   // advance to next stage in experiment
-  async function handleAdvance() {
-    await advanceStudySession(sessionId);
+  async function handleAdvance(completionReason = "manual") {
+    const reason = completionReason === "timeout" ? "timeout" : "manual"; // avoid react events being passed as reason
+    await advanceStudySession(sessionId, reason);
     const updatedSession = await getStudySession(sessionId);
     setSession(updatedSession);
     setTimedOutStage(null);
@@ -76,19 +77,21 @@ export default function StudySession() {
 
     case "manual_review":
       return (
-        <>
-          <StageTimer
-            startedAt={session.stage_started_at}
-            durationMinutes={config.manual_review_max_minutes}
-            graceMinutes={config.timer_grace_period}
-            onExpired={() => setTimedOutStage("manual_review")}
-          />
-          <ManualReview
-            sessionId={sessionId}
-            onContinue={handleAdvance}
-            autoAdvance={timedOutStage === "manual_review"}
-          />
-        </>
+        <ManualReview
+          sessionId={sessionId}
+          onContinue={handleAdvance}
+          autoAdvance={timedOutStage === "manual_review"}
+          timer={
+            Number.isFinite(config.manual_review_max_minutes) && (
+              <StageTimer
+                startedAt={session.stage_started_at}
+                durationMinutes={config.manual_review_max_minutes}
+                graceMinutes={config.timer_grace_period}
+                onExpired={() => setTimedOutStage("manual_review")}
+              />
+            )
+          }
+        />
       );
 
     case "ai_review": {
@@ -99,22 +102,22 @@ export default function StudySession() {
           ? new Date(Math.max(stageStartMs, readyMs)).toISOString()
           : null;
       return (
-        <>
-          {timerStart && (
-            <StageTimer
-              startedAt={timerStart}
-              durationMinutes={config.ai_review_max_minutes}
-              graceMinutes={config.timer_grace_period}
-              onExpired={() => setTimedOutStage("ai_review")}
-            />
-          )}
-          <ResearchAiReview
-            sessionId={sessionId}
-            onContinue={handleAdvance}
-            onAnalysisReady={(timestamp) => setAiReadyAt(timestamp)}
-            autoAdvance={timedOutStage === "ai_review"}
-          />
-        </>
+        <ResearchAiReview
+          sessionId={sessionId}
+          onContinue={handleAdvance}
+          onAnalysisReady={(timestamp) => setAiReadyAt(timestamp)}
+          autoAdvance={timedOutStage === "ai_review"}
+          timer={
+            timerStart && Number.isFinite(config.ai_review_max_minutes) && (
+              <StageTimer
+                startedAt={timerStart}
+                durationMinutes={config.ai_review_max_minutes}
+                graceMinutes={config.timer_grace_period}
+                onExpired={() => setTimedOutStage("ai_review")}
+              />
+            )
+          }
+        />
       );
     }
     case "completed":

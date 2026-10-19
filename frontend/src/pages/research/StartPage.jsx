@@ -43,10 +43,14 @@ export default function StartPage() {
 
   return (
     <main className="study-start-page">
+      <img
+        className="study-start-logo"
+        src="/stse-lab-logo.png"
+        alt="STSE Lab — Socio-Technical Systems Engineering Laboratory"
+      />
       <section className="study-start-card" aria-labelledby="study-start-title">
         <div className="study-start-header">
-          <p className="study-start-eyebrow">Research study</p>
-          <h1 id="study-start-title">Get started</h1>
+          <h1 id="study-start-title">STSELab Research Study</h1>
           <p className="study-start-subtitle">
             Enter your information below to begin the requirements evaluation
             study.
@@ -86,10 +90,6 @@ export default function StartPage() {
                 </option>
               ))}
             </select>
-            <p className="study-start-hint">
-              Your class section determines which study activities you will
-              complete.
-            </p>
           </div>
 
           {error && (

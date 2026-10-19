@@ -13,8 +13,14 @@ export async function getStudySession(sessionId) {
   return response.data;
 }
 
-export async function advanceStudySession(sessionId) {
-  const response = await axios.post(`/api/study/sessions/${sessionId}/advance`);
+export async function advanceStudySession(
+  sessionId,
+  completionReason = "manual",
+) {
+  const response = await axios.post(
+    `/api/study/sessions/${sessionId}/advance`,
+    { completion_reason: completionReason },
+  );
   return response.data;
 }
 

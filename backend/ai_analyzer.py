@@ -17,10 +17,10 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import base64
 from provider_config import get_provider, get_model
+import time
 
 @dataclass
 class AnalysisContext:
@@ -321,8 +321,14 @@ def analyze_requirements(requirements: List[Dict], context: AnalysisContext, pro
     try:
         system_prompt = _build_prompt(requirements)
         user_prompt = f"{_build_context_prompt(context)}\n{_build_requirement_prompt(requirements)}"
-        
-        result_text = _call_ai(user_prompt, system_prompt, len(requirements), provider, api_key, context)
+
+        if os.getenv("MOCK_AI", "false") == "true":
+            print("MOCK AI ANALYSIS ON")
+            time.sleep(30)
+            mock_path = ( Path(__file__).parent / "study_data" / "mock_claude_response.json" )
+            result_text = mock_path.read_text(encoding="utf-8")
+        else:
+            result_text = _call_ai(user_prompt, system_prompt, len(requirements), provider, api_key, context)
 
         if result_text.startswith("```"):
             lines = result_text.split("\n")
@@ -331,7 +337,9 @@ def analyze_requirements(requirements: List[Dict], context: AnalysisContext, pro
                 inner = inner[:-1]
             result_text = "\n".join(inner)
 
+
         result = json.loads(result_text)
+        
         violated_criteria = result.get("individualEvaluations", {})
 
         req_text_by_id = {r["id"]: r["text"] for r in requirements} 
@@ -456,31 +464,22 @@ def analyze_all_requirements(
                 "requirements": analyzed,
             }
 
-    actual_provider = (provider or get_provider()).lower()
-    # no parallelization for ollama 
-    if actual_provider == "ollama":
-        num_workers = 1
-    else: 
-        # changed to one for now since we are only doing one LLM call now
-        num_workers = 1
-
     BATCH_SIZE = 13
+        
+    try: 
+        analysis_result = _batch_requirements(requirements, context, provider, api_key, BATCH_SIZE)
 
-    with ThreadPoolExecutor(max_workers=num_workers) as executor:
-        analysis_future = executor.submit(_batch_requirements, requirements, context, provider, api_key, BATCH_SIZE)
+        analyzed = [
+            analysis_result[req["id"]]
+            for req in requirements
+        ]
 
-        try: 
-            analysis_result = analysis_future.result()
-            # add results together and add to analyzed 
-            analyzed = [
-                analysis_result[req["id"]]
-                for req in requirements
-            ]
-            for req in analyzed:
-                n = sum(1 for ev in req.get("criteria_evaluations", []) if not ev.get("satisfied", True))
-                print(f"  [{req['req_id']}] done — {n} criteria violated")
-        except Exception as e:
-            analyzed = list(_error_result(requirements, str(e), CRITERIA_ORDER).values())
+        for req in analyzed:
+            n = sum(1 for ev in req.get("criteria_evaluations", []) if not ev.get("satisfied", True))
+            print(f"  [{req['req_id']}] done — {n} criteria violated")
+            
+    except Exception as e:
+        analyzed = list(_error_result(requirements, str(e), CRITERIA_ORDER).values())
 
     return {
         "session_id": session_id,

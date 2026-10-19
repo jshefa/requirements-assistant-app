@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from database import get_connection
 from study_data.study_config import STUDY_CONFIG
-
+from typing import Literal
 from study_analysis import research_analysis
 
 router = APIRouter(prefix="/api/study/sessions", tags=["study-sessions"])
@@ -13,6 +13,9 @@ router = APIRouter(prefix="/api/study/sessions", tags=["study-sessions"])
 class SessionCreate(BaseModel):
     vt_pid: str | None = None
     class_section: str
+
+class AdvanceRequest(BaseModel):
+    completion_reason: Literal["manual", "timeout"] = "manual"
 
 SECTION_GROUPS = {
     "undergrad_1": "human_ai",
@@ -115,7 +118,8 @@ def get_session(session_id: UUID):
     return {**session, "config": STUDY_CONFIG}
 
 @router.post("/{session_id}/advance")
-def advance_section(session_id: UUID):
+def advance_section(session_id: UUID, data: AdvanceRequest | None = None):
+    completion_reason = data.completion_reason if data else "manual"
     with get_connection() as conn:
 
         # retrieve and lock the session
@@ -168,12 +172,13 @@ def advance_section(session_id: UUID):
         # finish current stage
         curr_stage = conn.execute("""
             UPDATE study_stage_history
-            SET completed_at = NOW()
+            SET completed_at = NOW(),
+                completion_reason = %s
             WHERE session_id = %s
                 AND stage = %s
                 AND completed_at IS NULL
             RETURNING id
-        """, (session_id, current_stage)).fetchone()
+        """, (completion_reason, session_id, current_stage)).fetchone()
 
         if curr_stage is None:
             raise HTTPException(409, "No active stage record found")

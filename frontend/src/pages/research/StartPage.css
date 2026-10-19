@@ -2,13 +2,23 @@
 
 .study-start-page {
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
+  gap: var(--space-6);
   padding: var(--space-10) var(--space-4);
   min-height: 65vh;
 }
 
+.study-start-logo {
+  display: block;
+  width: 100%;
+  max-width: 38rem;
+  height: auto;
+}
+
 .study-start-card {
+  box-sizing: border-box;
   width: 100%;
   max-width: 34rem;
   padding: var(--space-8);
@@ -85,6 +95,11 @@
   color: var(--color-text-subtle);
 }
 
+.study-start-field select option {
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
 .study-start-field input:focus-visible,
 .study-start-field select:focus-visible {
   outline: none;
@@ -117,6 +132,7 @@
 
 .study-start-submit {
   width: 100%;
+  margin-top: var(--space-3);
 }
 
 @media (max-width: 640px) {

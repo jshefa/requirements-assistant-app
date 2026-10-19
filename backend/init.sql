@@ -63,7 +63,8 @@ CREATE TABLE study_stage_history (
     session_id UUID     NOT NULL REFERENCES study_sessions(id),
     stage               TEXT NOT NULL,
     started_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    completed_at        TIMESTAMPTZ
+    completed_at        TIMESTAMPTZ,
+    completion_reason TEXT CHECK (completion_reason IN ('manual', 'timeout'))
 );
 
 /* stores extra timestamps for the following other interactions: 

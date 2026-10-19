@@ -8,6 +8,7 @@ import {
   logStudyEvent,
 } from "../../api/studyLogging";
 import RequirementCard from "../../components/RequirementCard";
+import StudyReviewLayout from "../../components/research/StudyReviewLayout";
 import "../ReviewPage.css";
 import "./ManualReview.css";
 import AiAnalysisFailed from "../../components/research/AiAnalysisFailed";
@@ -46,6 +47,7 @@ export default function ResearchAiReview({
   onContinue,
   onAnalysisReady,
   autoAdvance = false,
+  timer,
 }) {
   const { sessionId: routeSessionId } = useParams();
   const sessionId = providedSessionId ?? routeSessionId;
@@ -419,7 +421,7 @@ export default function ResearchAiReview({
       await logQueueRef.current.catch(() => {});
       if (!onContinue)
         throw new Error("Study continuation handler was not provided.");
-      await onContinue();
+      await onContinue(timedOut ? "timeout" : "manual");
     } catch (err) {
       setError(`Could not finish AI review: ${errorMessage(err)}`);
     } finally {
@@ -492,30 +494,18 @@ export default function ResearchAiReview({
   ).length;
 
   return (
-    <main className="review-page manual-review">
-      <header className="review-header">
-        <h1>AI review</h1>
-        <p>Review the AI's findings for each requirement.</p>
-        <p>
-          Requirement {index + 1} of {requirements.length} · {reviewed} of{" "}
-          {violations.length} AI findings reviewed
-        </p>
-      </header>
-
-      <div
-        className="requirements-list"
-        onFocusCapture={handleTextFocus}
-        onBlurCapture={handleTextBlur}
-      >
-        <RequirementCard
-          key={requirement.req_id}
-          requirement={requirement}
-          feedbackState={feedbackState}
-          onFeedbackChange={handleFeedbackChange}
-        />
-      </div>
-
-      <footer className="manual-review__footer">
+    <StudyReviewLayout
+      className="manual-review review-page"
+      title="AI review"
+      description="Review the AI's findings for each requirement."
+      requirementIndex={index + 1}
+      requirementCount={requirements.length}
+      progressText={`${reviewed} of ${violations.length} AI findings reviewed`}
+      progressValue={reviewed}
+      progressMax={violations.length}
+      scrollKey={index}
+      timer={timer}
+      footerStatus={
         <div className="manual-review__feedback">
           {error && (
             <p className="error-msg" role="alert">
@@ -528,6 +518,8 @@ export default function ResearchAiReview({
               : "Decisions saved automatically"}
           </span>
         </div>
+      }
+      footerActions={
         <div className="manual-review__navigation">
           <button
             type="button"
@@ -566,7 +558,20 @@ export default function ResearchAiReview({
             </button>
           )}
         </div>
-      </footer>
-    </main>
+      }
+    >
+      <div
+        className="requirements-list"
+        onFocusCapture={handleTextFocus}
+        onBlurCapture={handleTextBlur}
+      >
+        <RequirementCard
+          key={requirement.req_id}
+          requirement={requirement}
+          feedbackState={feedbackState}
+          onFeedbackChange={handleFeedbackChange}
+        />
+      </div>
+    </StudyReviewLayout>
   );
 }

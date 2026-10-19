@@ -8,6 +8,7 @@ import {
   saveManualEval,
 } from "../../api/studyLogging";
 import CriterionOption from "../../components/CriterionOption";
+import StudyReviewLayout from "../../components/research/StudyReviewLayout";
 import "./ManualReview.css";
 
 function normalizeRequirements(raw) {
@@ -67,6 +68,7 @@ export default function ManualReview({
   sessionId: providedSessionId,
   onContinue,
   autoAdvance = false,
+  timer,
 }) {
   const { sessionId: routeSessionId } = useParams();
   const sessionId = providedSessionId ?? routeSessionId;
@@ -331,7 +333,7 @@ export default function ManualReview({
         setError("The stage continuation handler was not provided.");
         return;
       }
-      await onContinue();
+      await onContinue(timedOut ? "timeout" : "manual");
     } catch (err) {
       setError(`Unable to continue: ${errorMessage(err)}`);
     } finally {
@@ -383,110 +385,18 @@ export default function ManualReview({
     .replaceAll("{requirement_id}", requirement.id);
 
   return (
-    <main className="manual-review">
-      <header className="manual-review__header">
-        <div>
-          <div className="manual-review__eyebrow">Requirements evaluation</div>
-          <h1>Manual review</h1>
-          <p>Review each requirement against the INCOSE quality criteria.</p>
-        </div>
-        <div className="manual-review__progress-summary">
-          <strong>
-            Requirement {index + 1} of {requirements.length}
-          </strong>
-          <span>
-            {responded} of {requirements.length} answered
-          </span>
-        </div>
-      </header>
-
-      <div
-        className="manual-review__progress-track"
-        role="progressbar"
-        aria-label="Requirements reviewed"
-        aria-valuemin={0}
-        aria-valuemax={requirements.length}
-        aria-valuenow={responded}
-      >
-        <div style={{ width: `${(responded / requirements.length) * 100}%` }} />
-      </div>
-
-      <section
-        className="manual-review__requirement"
-        aria-labelledby="manual-requirement-title"
-      >
-        <div className="manual-review__section-topline">
-          <span className="manual-review__section-label">
-            Current requirement
-          </span>
-          <span
-            className={`manual-review__status${hasCompleteResponse(answers, requirement.id) ? " manual-review__status--answered" : ""}`}
-          >
-            {hasCompleteResponse(answers, requirement.id)
-              ? "Answered"
-              : "Not answered"}
-          </span>
-        </div>
-        <h2 id="manual-requirement-title">Requirement {requirement.id}</h2>
-        <p className="manual-review__requirement-text">{requirement.text}</p>
-      </section>
-
-      <section
-        className="manual-review__survey"
-        aria-labelledby="manual-survey-title"
-      >
-        <div className="manual-review__survey-intro">
-          <h2 id="manual-survey-title">{question}</h2>
-          {survey.question_info && <p>{survey.question_info}</p>}
-          <p className="manual-review__survey-hint">
-            Every selected violation requires an explanation before finishing.
-            A1 does not require an explanation and cannot be combined with other
-            choices.
-          </p>
-        </div>
-
-        {conflict && (
-          <div className="manual-review__alert" role="alert">
-            {conflict}
-          </div>
-        )}
-
-        <div className="manual-review__criteria">
-          {choices.map(([criterionId, label]) => (
-            <CriterionOption
-              key={`${requirement.id}:${criterionId}`}
-              criterionId={criterionId}
-              label={label}
-              selected={current[criterionId]?.selected ?? false}
-              notes={current[criterionId]?.notes ?? ""}
-              disabled={busy}
-              onSelectedChange={(checked) =>
-                changeSelection(requirement.id, criterionId, checked)
-              }
-              onNotesChange={(notes) =>
-                changeNotes(requirement.id, criterionId, notes)
-              }
-              onNotesFocus={() =>
-                logEvent({
-                  event_type: "reasoning_focused",
-                  requirement_id: requirement.id,
-                  criterion_id: criterionId,
-                })
-              }
-              onNotesBlur={() => {
-                logEvent({
-                  event_type: "reasoning_blurred",
-                  requirement_id: requirement.id,
-                  criterion_id: criterionId,
-                });
-                saveNotes(requirement.id, criterionId);
-              }}
-            />
-          ))}
-        </div>
-      </section>
-
-      <footer className="manual-review__footer">
+    <StudyReviewLayout
+      className="manual-review"
+      title="Manual review"
+      description="Review each requirement against the INCOSE quality criteria."
+      requirementIndex={index + 1}
+      requirementCount={requirements.length}
+      progressText={`${responded} of ${requirements.length} answered`}
+      progressValue={responded}
+      progressMax={requirements.length}
+      scrollKey={index}
+      timer={timer}
+      footerStatus={
         <div className="manual-review__feedback">
           {error && (
             <p className="manual-review__error error-msg" role="alert">
@@ -501,6 +411,8 @@ export default function ManualReview({
                 : "Changes saved automatically"}
           </span>
         </div>
+      }
+      footerActions={
         <div className="manual-review__navigation">
           <button
             type="button"
@@ -539,7 +451,82 @@ export default function ManualReview({
             </button>
           )}
         </div>
-      </footer>
-    </main>
+      }
+    >
+      <section
+        className="manual-review__requirement"
+        aria-labelledby="manual-requirement-title"
+      >
+        <div className="manual-review__section-topline">
+          <span className="manual-review__section-label">
+            Current requirement
+          </span>
+          <span
+            className={`manual-review__status${hasCompleteResponse(answers, requirement.id) ? " manual-review__status--answered" : ""}`}
+          >
+            {hasCompleteResponse(answers, requirement.id)
+              ? "Answered"
+              : "Not answered"}
+          </span>
+        </div>
+        <h2 id="manual-requirement-title">Requirement {requirement.id}</h2>
+        <p className="manual-review__requirement-text">{requirement.text}</p>
+      </section>
+      
+      <section
+        className="manual-review__survey"
+        aria-labelledby="manual-survey-title"
+      >
+        <div className="manual-review__survey-intro">
+          <h2 id="manual-survey-title">{question}</h2>
+          {survey.question_info && <p>{survey.question_info}</p>}
+          <p className="manual-review__survey-hint">
+            Every selected violation requires an explanation before finishing.
+            A1 does not require an explanation and cannot be combined with other
+            choices.
+          </p>
+        </div>
+      
+        {conflict && (
+          <div className="manual-review__alert" role="alert">
+            {conflict}
+          </div>
+        )}
+      
+        <div className="manual-review__criteria">
+          {choices.map(([criterionId, label]) => (
+            <CriterionOption
+              key={`${requirement.id}:${criterionId}`}
+              criterionId={criterionId}
+              label={label}
+              selected={current[criterionId]?.selected ?? false}
+              notes={current[criterionId]?.notes ?? ""}
+              disabled={busy}
+              onSelectedChange={(checked) =>
+                changeSelection(requirement.id, criterionId, checked)
+              }
+              onNotesChange={(notes) =>
+                changeNotes(requirement.id, criterionId, notes)
+              }
+              onNotesFocus={() =>
+                logEvent({
+                  event_type: "reasoning_focused",
+                  requirement_id: requirement.id,
+                  criterion_id: criterionId,
+                })
+              }
+              onNotesBlur={() => {
+                logEvent({
+                  event_type: "reasoning_blurred",
+                  requirement_id: requirement.id,
+                  criterion_id: criterionId,
+                });
+                saveNotes(requirement.id, criterionId);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+    </StudyReviewLayout>
   );
 }
