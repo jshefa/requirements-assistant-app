@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { getStudyAnalysis } from "../../api/studySessions";
+import { getStudyAnalysis, retryStudyAnalysis } from "../../api/studySessions";
 import {
   getAIDecisions,
   saveAIDecision,
@@ -10,6 +10,7 @@ import {
 import RequirementCard from "../../components/RequirementCard";
 import "../ReviewPage.css";
 import "./ManualReview.css";
+import AiAnalysisFailed from "../../components/research/AiAnalysisFailed";
 
 // how often to check whether the analysis is ready (only polls when not already ready)
 const POLL_INTERVAL_MS = 3000;
@@ -58,6 +59,9 @@ export default function ResearchAiReview({
   const [busy, setBusy] = useState(false);
   const [pendingSaves, setPendingSaves] = useState(0);
   const [error, setError] = useState("");
+  const [retryError, setRetryError] = useState("");
+  const [requestingRetry, setRequestingRetry] = useState(false);
+  const [retryPollToken, setRetryPollToken] = useState(0);
 
   const feedbackRef = useRef({});
   const savedRef = useRef({});
@@ -65,6 +69,10 @@ export default function ResearchAiReview({
   const logQueueRef = useRef(Promise.resolve());
   const navigatingRef = useRef(false);
   const timeoutAttemptedRef = useRef(false);
+  // After a retry is accepted, the old failed row may remain the latest
+  // until the background task starts and inserts the new analysis row.
+  const lastFailedAnalysisIdRef = useRef(null);
+  const waitingForNewAnalysisRef = useRef(null);
 
   useEffect(() => {
     if (!sessionId) {
@@ -80,20 +88,32 @@ export default function ResearchAiReview({
       try {
         const data = await getStudyAnalysis(sessionId);
         if (!active) return;
+        if (data.status === "failed") {
+          // The retry endpoint schedules a background task. Until it starts,
+          // this endpoint may still return the *previous* failed analysis.
+          if (waitingForNewAnalysisRef.current === data.analysis_id) {
+            setStatus("pending");
+            setLoading(false);
+            pollTimer = setTimeout(loadAnalysis, POLL_INTERVAL_MS);
+            return;
+          }
+
+          waitingForNewAnalysisRef.current = null;
+          lastFailedAnalysisIdRef.current = data.analysis_id;
+          setStatus("failed");
+          setError(data.error || "The AI analysis could not be completed.");
+          setLoading(false);
+          return;
+        }
+
+        // A new attempt is underway, or the analysis is ready.
+        waitingForNewAnalysisRef.current = null;
         setStatus(data.status);
+        setError("");
 
         if (data.status === "pending" || data.status === "running") {
           setLoading(false);
           pollTimer = setTimeout(loadAnalysis, POLL_INTERVAL_MS);
-          return;
-        }
-
-        if (data.status === "failed") {
-          setError(
-            data.error ||
-              "The AI analysis failed. Please notify the professor.",
-          );
-          setLoading(false);
           return;
         }
 
@@ -170,7 +190,26 @@ export default function ResearchAiReview({
       active = false;
       clearTimeout(pollTimer);
     };
-  }, [sessionId]);
+  }, [sessionId, retryPollToken]);
+
+  async function handleRetryAnalysis() {
+    if (requestingRetry) return;
+
+    setRequestingRetry(true);
+    setRetryError("");
+    try {
+      await retryStudyAnalysis(sessionId);
+      waitingForNewAnalysisRef.current = lastFailedAnalysisIdRef.current;
+      setStatus("pending");
+      setError("");
+      // Restart the existing analysis-polling effect after retry is accepted.
+      setRetryPollToken((value) => value + 1);
+    } catch (err) {
+      setRetryError(`Could not restart AI analysis: ${errorMessage(err)}`);
+    } finally {
+      setRequestingRetry(false);
+    }
+  }
 
   // logs events (clicking around, not feedback changes)
   // preserves the logging order of events, and finish pending logs before advancing stages.
@@ -235,7 +274,7 @@ export default function ResearchAiReview({
     return job;
   }
 
-  function handleFeedbackChange(key, feedback) {
+  function handleFeedbackChange(key, requirementId, feedback) {
     const previous = feedbackRef.current[key];
     feedbackRef.current = { ...feedbackRef.current, [key]: feedback };
     setFeedbackState(feedbackRef.current);
@@ -245,7 +284,6 @@ export default function ResearchAiReview({
       feedback.user_action !== previous?.user_action &&
       feedback.user_action !== "suggest"
     ) {
-      const requirementId = key.slice(0, key.lastIndexOf("-"));
       queueSave(key, requirementId, feedback.criterion_id, feedback).catch(
         () => {},
       );
@@ -412,6 +450,16 @@ export default function ResearchAiReview({
       </div>
     );
   if (!analysis) {
+    if (status === "failed")
+      return (
+        <AiAnalysisFailed
+          message={error}
+          retryError={retryError}
+          retrying={requestingRetry}
+          onRetry={handleRetryAnalysis}
+        />
+      );
+
     if (error)
       return (
         <div className="error-msg" role="alert">

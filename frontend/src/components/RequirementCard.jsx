@@ -123,7 +123,9 @@ export default function RequirementCard({
               evaluation={ev}
               originalText={requirement.original_text}
               feedback={feedback}
-              onFeedbackChange={(fb) => onFeedbackChange(key, fb)}
+              onFeedbackChange={(fb) =>
+                onFeedbackChange(key, requirement.req_id, fb)
+              }
             />
           );
         })}

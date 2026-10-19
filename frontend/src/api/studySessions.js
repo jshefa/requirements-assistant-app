@@ -22,3 +22,10 @@ export async function getStudyAnalysis(sessionId) {
   const response = await axios.get(`/api/study/sessions/${sessionId}/analysis`);
   return response.data;
 }
+
+export async function retryStudyAnalysis(sessionId) {
+  const response = await axios.post(
+    `/api/study/sessions/${sessionId}/retry-analysis`,
+  );
+  return response.data;
+}

@@ -62,8 +62,9 @@ export default function ReviewPage() {
     fetchAnalysis()
   }, [sessionId, reviewerId])
 
-  const handleFeedbackChange = useCallback((key, fb) => {
-    setFeedbackState((prev) => ({ ...prev, [key]: fb }))
+  const handleFeedbackChange = useCallback((key, requirementId, fb) => {
+    const feedback = fb ?? requirementId;
+    setFeedbackState((prev) => ({ ...prev, [key]: feedback }))
   }, [])
 
   // Count totals
