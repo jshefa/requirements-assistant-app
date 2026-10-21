@@ -186,7 +186,7 @@ def manual_review_section(user, session_id):
         wait(1, 5)
         if index < len(requirements) - 1:
             next_req_id = requirements[index + 1]["id"]
-            click_event(user, session_id, criterion, req_id, "requirement_next", f'to: "{next_req_id}"')
+            click_event(user, session_id, criterion, req_id, "requirement_next", {"to": next_req_id})
 
     advance_stage(user, session_id) 
 
@@ -233,7 +233,7 @@ def ai_review_section(user, session_id):
         wait(2, 10)
         if index < len(requirements) - 1:
             next_req_id = requirements[index + 1]["req_id"]
-            click_event(user, session_id, None, req_id, "requirement_next", f'to: "{next_req_id}"')
+            click_event(user, session_id, None, req_id, "requirement_next", {"to": next_req_id})
 
 
     advance_stage(user, session_id)
