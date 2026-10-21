@@ -61,7 +61,9 @@ export default function CriterionCard({
     <div className={`criterion-card ${satisfied ? "satisfied" : "violated"}`}>
       {/* Header */}
       <div className="criterion-header">
-        <span className="criterion-badge">{criterion_id}</span>
+        {!researchMode && (
+          <span className="criterion-badge">{criterion_id}</span>
+        )}
         <span className="criterion-name">{criterion_name}</span>
         <span className="criterion-status">
           {satisfied ? "✓ Satisfied" : "✗ Violated"}
