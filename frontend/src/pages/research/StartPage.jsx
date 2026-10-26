@@ -20,14 +20,14 @@ export default function StartPage() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const trimmedPid = fullName.trim();
-    if (!trimmedPid || !classSection || submitting) return;
+    const trimmedName = fullName.trim();
+    if (!trimmedName || !classSection || submitting) return;
 
     setSubmitting(true);
     setError("");
 
     try {
-      const session = await createStudySession(trimmedPid, classSection);
+      const session = await createStudySession(trimmedName, classSection);
       navigate(`/session/${session.id}`);
     } catch (err) {
       const detail = err.response?.data?.detail;
@@ -59,12 +59,12 @@ export default function StartPage() {
 
         <form className="study-start-form" onSubmit={handleSubmit}>
           <div className="study-start-field">
-            <label htmlFor="study-participant-pid">VT PID</label>
+            <label htmlFor="study-participant-name">Full Name</label>
             <input
-              id="study-participant-pid"
+              id="study-participant-name"
               type="text"
               autoComplete="username"
-              placeholder="Enter your VT PID"
+              placeholder="Enter your Full Name"
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
               disabled={submitting}
