@@ -1,6 +1,6 @@
 TIME_SCALE = 1
 
-CLASS = "undergrad_1"
+CLASS = "ISE-2804 Section 1"
 
 NUM_REQUIREMENTS = 13
 

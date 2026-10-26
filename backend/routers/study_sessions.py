@@ -21,10 +21,10 @@ class AdvanceRequest(BaseModel):
     completion_reason: Literal["manual", "timeout"] = "manual"
 
 SECTION_GROUPS = {
-    "undergrad_1": "human_ai",
-    "undergrad_2": "ai_only",
-    "grad_1": "grad_human_ai",
-    "grad_2": "grad_ai_only"
+    "ISE-2804 Section 1": "human_ai",
+    "ISE-2804 Section 2": "ai_only",
+    "ISE-5804 Breakout Room 1": "grad_human_ai",
+    "ISE-5804 Breakout Room 2": "grad_ai_only"
 }
 
 STAGE_FLOWS = {

@@ -4,10 +4,10 @@ import { createStudySession } from "../../api/studySessions";
 import "./StartPage.css";
 
 const CLASS_SECTIONS = [
-  { value: "undergrad_1", label: "Undergraduate - Section 1" },
-  { value: "undergrad_2", label: "Undergraduate - Section 2" },
-  { value: "grad_1", label: "Graduate - Section 1" },
-  { value: "grad_2", label: "Graduate - Section 2" },
+  "ISE-2804 Section 1",
+  "ISE-2804 Section 2",
+  "ISE-5804 Breakout Room 1",
+  "ISE-5804 Breakout Room 2",
 ];
 
 export default function StartPage() {
@@ -85,8 +85,8 @@ export default function StartPage() {
                 Select your class section
               </option>
               {CLASS_SECTIONS.map((section) => (
-                <option key={section.value} value={section.value}>
-                  {section.label}
+                <option key={section} value={section}>
+                  {section}
                 </option>
               ))}
             </select>
