@@ -1,7 +1,6 @@
--- stores data about the user's session. one user/pid can have multiple sessions, but we won't be doing that for the sake of the experiment
+-- stores data about the user's session. one user can have multiple sessions, but we won't be doing that for the sake of the experiment
 CREATE TABLE study_sessions (
     id UUID             PRIMARY KEY DEFAULT gen_random_uuid(),
-    vt_pid              TEXT,
     class_section       TEXT NOT NULL,
     experiment_group    TEXT NOT NULL,
     current_stage       TEXT NOT NULL DEFAULT 'intro',
@@ -139,3 +138,10 @@ ORDER BY
     requirement_id,
     criterion_id,
     id DESC;
+
+CREATE SCHEMA participant_identity;
+
+CREATE TABLE participant_identity.name_mapping (
+    session_id UUID PRIMARY KEY REFERENCES public.study_sessions(id),
+    full_name TEXT NOT NULL
+);

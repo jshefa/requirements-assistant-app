@@ -1,8 +1,8 @@
 import axios from "axios";
 
-export async function createStudySession(vtPid, classSection) {
+export async function createStudySession(fullName, classSection) {
   const response = await axios.post(`/api/study/sessions/`, {
-    vt_pid: vtPid,
+    participant_name: fullName,
     class_section: classSection,
   });
   return response.data;

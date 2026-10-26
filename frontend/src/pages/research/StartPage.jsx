@@ -12,7 +12,7 @@ const CLASS_SECTIONS = [
 
 export default function StartPage() {
   const navigate = useNavigate();
-  const [pid, setPid] = useState("");
+  const [fullName, setFullName] = useState("");
   const [classSection, setClassSection] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -20,7 +20,7 @@ export default function StartPage() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const trimmedPid = pid.trim();
+    const trimmedPid = fullName.trim();
     if (!trimmedPid || !classSection || submitting) return;
 
     setSubmitting(true);
@@ -65,8 +65,8 @@ export default function StartPage() {
               type="text"
               autoComplete="username"
               placeholder="Enter your VT PID"
-              value={pid}
-              onChange={(event) => setPid(event.target.value)}
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
               disabled={submitting}
               required
             />
@@ -101,7 +101,7 @@ export default function StartPage() {
           <button
             className="btn-primary study-start-submit"
             type="submit"
-            disabled={submitting || !pid.trim() || !classSection}
+            disabled={submitting || !fullName.trim() || !classSection}
           >
             {submitting ? "Starting study..." : "Start study"}
           </button>

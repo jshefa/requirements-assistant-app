@@ -1,17 +1,20 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel
+from pydantic import BaseModel, StringConstraints
 
 from database import get_connection
 from study_data.study_config import STUDY_CONFIG
-from typing import Literal
+from typing import Literal, Annotated
 from study_analysis import research_analysis
 
 router = APIRouter(prefix="/api/study/sessions", tags=["study-sessions"])
 
 class SessionCreate(BaseModel):
-    vt_pid: str | None = None
+    participant_name: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1)
+    ]
     class_section: str
 
 class AdvanceRequest(BaseModel):
@@ -68,14 +71,18 @@ def create_session(data: SessionCreate, background_tasks: BackgroundTasks):
 
         session = conn.execute("""
             INSERT INTO study_sessions
-                (vt_pid, class_section, experiment_group)
-            VALUES (%s, %s, %s)
+                (class_section, experiment_group)
+            VALUES (%s, %s)
             RETURNING id, current_stage, experiment_group
         """, (
-            data.vt_pid,
             data.class_section,
             experiment_group
         )).fetchone()
+
+        conn.execute("""
+            INSERT INTO participant_identity.name_mapping (session_id, full_name)
+            VALUES (%s, %s)
+        """, (session["id"], data.participant_name.strip()))
 
         conn.execute("""
             INSERT INTO study_stage_history

@@ -1,4 +1,4 @@
-TIME_SCALE = .01
+TIME_SCALE = 1
 
 CLASS = "undergrad_1"
 

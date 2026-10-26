@@ -16,7 +16,7 @@ def create_session(user):
     response = user.client.post(
         "/api/study/sessions/",
         json={
-            "vt_pid": f"test_{uuid.uuid4().hex[:12]}",
+            "participant_name": f"test_{uuid.uuid4().hex[:12]}",
             "class_section": CLASS
         },
         name="Create session"
