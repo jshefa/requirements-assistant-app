@@ -20,9 +20,6 @@ export default function StudySession() {
   const [timedOutStage, setTimedOutStage] = useState(null);
   const [aiReadyAt, setAiReadyAt] = useState(null);
 
-  // Keep requirement context for the global activity tracker without
-  // triggering rerenders on every requirement change.
-  // session.current_stage remains the source of truth for the current stage.
   const activityContextRef = useRef({ stage: null, requirementId: null });
 
   const reportManualRequirement = useCallback((requirementId) => {
@@ -109,19 +106,22 @@ Answer based on your own experience. There are no right or wrong answers. Select
         );
       }
 
-      case "manual_instructions":
-        return (
-          <StudyInstructions
-            title="Manual Requirements Analysis Instructions"
-            description={`For the next section, you will independently evaluate requirements based off of the provided INCOSE criteria.
+      case "manual_instructions": {
+        const description = `For the next section, you will independently evaluate requirements based off of the provided INCOSE criteria.
 
           For each requirement, select all criteria that you believe it violates. If you think the requirement has no issues, then select 'No Issues Found'.
           
-          For this section you will have ${config.manual_review_max_minutes} to complete the section. Please ensure a steady pace in order to finish in time.`}
+          For this section you will have ${config.manual_review_max_minutes > 0 ? `${config.manual_review_max_minutes} minutes. Please ensure a steady pace in order to finish in time.` : "no time limit, but please ensure a steady pace."} `;
+
+        return (
+          <StudyInstructions
+            title="Manual Requirements Analysis Instructions"
+            description={description}
             buttonText="Start Manual Review"
             onContinue={handleAdvance}
           />
         );
+      }
 
       case "manual_review":
         return (
@@ -143,7 +143,7 @@ Answer based on your own experience. There are no right or wrong answers. Select
           />
         );
 
-      case "ai_instructions":
+      case "ai_instructions": {
         return (
           <StudyInstructions
             title="AI Review Instructions"
@@ -151,11 +151,12 @@ Answer based on your own experience. There are no right or wrong answers. Select
             
             For each violation, you can either accept, reject, or modify the violation. For criteria where the AI found no violations, you can select 'Suggest a change anyway' to mark your own.
           
-            For this section you will have ${config.ai_review_max_minutes} to complete the section. Please ensure a steady pace in order to finish in time.`}
+            For this section you will have ${config.ai_review_max_minutes > 0 ? `${config.ai_review_max_minutes} minutes. Please ensure a steady pace in order to finish in time.` : "no time limit, but please ensure a steady pace."}`}
             buttonText="Start AI Review"
             onContinue={handleAdvance}
           />
         );
+      }
 
       case "ai_review": {
         const stageStartMs = new Date(session.stage_started_at).getTime();

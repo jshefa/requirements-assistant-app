@@ -1,7 +1,7 @@
 STUDY_CONFIG = {
   "min_read_minutes": 5,
-  "manual_review_max_minutes": 25,
-  "ai_review_max_minutes": 25,
+  "manual_review_max_minutes": None,
+  "ai_review_max_minutes": None,
   "timer_grace_period": 5,
   "timed_read_groups": ["ai_only", "grad_ai_only"],
   "MATERIALS_USED": "point-mass-v1"
