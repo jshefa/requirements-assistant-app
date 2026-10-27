@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getConfidenceSurvey } from "../../api/studyMaterials";
-import { getConfidenceAnswers, saveConfidenceAnswer } from "../../api/studyLogging";
+import { getConfidenceAnswers, logStudyEvent, saveConfidenceAnswer } from "../../api/studyLogging";
 import ConfidenceQuestion from "../../components/research/ConfidenceQuestion";
 import EducationMatrix from "../../components/research/EducationMatrix";
 import "./ConfidenceSurvey.css";
@@ -226,7 +226,16 @@ export default function ConfidenceSurvey({
     setBusy(true);
     try {
       if (!(await flushAnswers())) return;
+      const fromSection = sections[sectionIndex];
+      const toSection = sections[sectionIndex + direction];
+      if (!fromSection || !toSection) return;
+
       setConfirmSkipped(false);
+      // Log only successful section navigation; logging failures must not block the survey.
+      logStudyEvent(sessionId, {
+        event_type: direction > 0 ? "survey_section_next" : "survey_section_previous",
+        event_data: { phase, from: fromSection.id, to: toSection.id },
+      }).catch((err) => console.warn("Survey section navigation log failed:", err));
       setSectionIndex((index) => index + direction);
     } finally {
       navigatingRef.current = false;

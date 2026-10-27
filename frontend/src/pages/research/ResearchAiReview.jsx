@@ -9,7 +9,6 @@ import {
 } from "../../api/studyLogging";
 import RequirementCard from "../../components/RequirementCard";
 import StudyReviewLayout from "../../components/research/StudyReviewLayout";
-import StudyReferencePanel from "../../components/research/StudyReferencePanel";
 import "../ReviewPage.css";
 import "./ManualReview.css";
 import AiAnalysisFailed from "../../components/research/AiAnalysisFailed";
@@ -48,8 +47,8 @@ export default function ResearchAiReview({
   onContinue,
   onAnalysisReady,
   autoAdvance = false,
-  showManualAssessment = false,
   timer,
+  onRequirementChange,
 }) {
   const { sessionId: routeSessionId } = useParams();
   const sessionId = providedSessionId ?? routeSessionId;
@@ -225,26 +224,6 @@ export default function ResearchAiReview({
     job.catch((err) => console.warn("Study interaction log failed:", err));
     return job;
   }
-
-  // logs tab in/out and refreshes
-  useEffect(() => {
-    if (!sessionId) return;
-    function visibilityChanged() {
-      logStudyEvent(sessionId, {
-        event_type: document.hidden ? "tab_hidden" : "tab_visible",
-      }).catch((err) => console.warn("Study interaction log failed:", err));
-    }
-    document.addEventListener("visibilitychange", visibilityChanged);
-
-    if (performance.getEntriesByType?.("navigation")?.[0]?.type === "reload") {
-      logStudyEvent(sessionId, { event_type: "page_refreshed" }).catch((err) =>
-        console.warn("Study interaction log failed:", err),
-      );
-    }
-
-    return () =>
-      document.removeEventListener("visibilitychange", visibilityChanged);
-  }, [sessionId]);
 
   // saves feedback change if there was an actual change
   function queueSave(key, requirementId, criterionId, feedback) {
@@ -447,6 +426,12 @@ export default function ResearchAiReview({
     void finish(true);
   }, [autoAdvance, loading, busy, analysis]);
 
+  // Tell the parent which requirement is currently displayed.
+  const currentRequirementId = analysis?.requirements?.[index]?.req_id ?? null;
+  useEffect(() => {
+    onRequirementChange?.(currentRequirementId);
+  }, [currentRequirementId, onRequirementChange]);
+
   if (loading)
     return (
       <div className="loading" role="status">
@@ -507,17 +492,6 @@ export default function ResearchAiReview({
       progressMax={violations.length}
       scrollKey={index}
       timer={timer}
-      referencePanel={
-        <StudyReferencePanel
-          sessionId={sessionId}
-          requirementId={requirement.req_id}
-          showManualAssessment={showManualAssessment}
-        />
-      }
-      onReferenceToggle={(open) => logEvent({
-        event_type: open ? "context_opened" : "context_closed",
-        requirement_id: requirement.req_id,
-      })}
       footerStatus={
         <div className="manual-review__feedback">
           {error && (

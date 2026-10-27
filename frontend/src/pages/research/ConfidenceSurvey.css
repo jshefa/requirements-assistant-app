@@ -226,23 +226,17 @@
   font-size: var(--text-base);
 }
 
-.confidence-survey__likert-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.confidence-survey__likert-row > .confidence-survey__clear {
-  margin: 0;
-  padding: var(--space-2) 0;
-  white-space: nowrap;
-}
-
 .confidence-survey__likert-options {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+}
+
+.confidence-survey__likert-clear {
+  margin: 0 0 0 var(--space-1);
+  padding: var(--space-2) 0;
+  white-space: nowrap;
 }
 
 .confidence-survey__likert-option {
