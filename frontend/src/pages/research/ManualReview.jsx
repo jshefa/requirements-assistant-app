@@ -9,6 +9,7 @@ import {
 } from "../../api/studyLogging";
 import CriterionOption from "../../components/CriterionOption";
 import StudyReviewLayout from "../../components/research/StudyReviewLayout";
+import StudyReferencePanel from "../../components/research/StudyReferencePanel";
 import "./ManualReview.css";
 
 function normalizeRequirements(raw) {
@@ -403,6 +404,15 @@ export default function ManualReview({
       progressMax={requirements.length}
       scrollKey={index}
       timer={timer}
+      referencePanel={
+        <StudyReferencePanel sessionId={sessionId} requirementId={requirement.id} />
+      }
+      onReferenceToggle={(open) =>
+        logEvent({
+          event_type: open ? "context_opened" : "context_closed",
+          requirement_id: requirement.id,
+        })
+      }
       footerStatus={
         <div className="manual-review__feedback">
           {error && (
@@ -479,7 +489,7 @@ export default function ManualReview({
         <h2 id="manual-requirement-title">Requirement {requirement.id}</h2>
         <p className="manual-review__requirement-text">{requirement.text}</p>
       </section>
-
+      
       <section
         className="manual-review__survey"
         aria-labelledby="manual-survey-title"
@@ -493,13 +503,13 @@ export default function ManualReview({
             choices.
           </p>
         </div>
-
+      
         {conflict && (
           <div className="manual-review__alert" role="alert">
             {conflict}
           </div>
         )}
-
+      
         <div className="manual-review__criteria">
           {choices.map(([criterionId, label]) => (
             <CriterionOption

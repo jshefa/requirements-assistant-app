@@ -9,6 +9,7 @@ import {
 } from "../../api/studyLogging";
 import RequirementCard from "../../components/RequirementCard";
 import StudyReviewLayout from "../../components/research/StudyReviewLayout";
+import StudyReferencePanel from "../../components/research/StudyReferencePanel";
 import "../ReviewPage.css";
 import "./ManualReview.css";
 import AiAnalysisFailed from "../../components/research/AiAnalysisFailed";
@@ -48,6 +49,7 @@ export default function ResearchAiReview({
   onAnalysisReady,
   autoAdvance = false,
   timer,
+  showManualAssessment = false,
   onRequirementChange,
 }) {
   const { sessionId: routeSessionId } = useParams();
@@ -492,6 +494,19 @@ export default function ResearchAiReview({
       progressMax={violations.length}
       scrollKey={index}
       timer={timer}
+      referencePanel={
+        <StudyReferencePanel
+          sessionId={sessionId}
+          requirementId={requirement.req_id}
+          showManualAssessment={showManualAssessment}
+        />
+      }
+      onReferenceToggle={(open) =>
+        logEvent({
+          event_type: open ? "context_opened" : "context_closed",
+          requirement_id: requirement.req_id,
+        })
+      }
       footerStatus={
         <div className="manual-review__feedback">
           {error && (
