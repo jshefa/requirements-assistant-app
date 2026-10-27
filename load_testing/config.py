@@ -1,6 +1,6 @@
-TIME_SCALE = 1
+TIME_SCALE = .5
 
-CLASS = "ISE-2804 Section 1"
+CLASS = "ISE-2804 Section 2"
 
 NUM_REQUIREMENTS = 13
 

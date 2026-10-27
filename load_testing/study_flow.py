@@ -238,6 +238,10 @@ def ai_review_section(user, session_id):
 
     advance_stage(user, session_id)
 
+def instructions_stage(user, session_id):
+    wait(1, 15)
+    advance_stage(user, session_id)
+
 def wait(min_seconds, max_seconds, use_time_scale=True):
     rand = random.uniform(min_seconds, max_seconds)
     time_to_sleep = TIME_SCALE * rand if use_time_scale else rand 
@@ -247,25 +251,34 @@ STAGE_FLOWS = {
     "human_ai": [
         intro_section,
         read_section,
+        instructions_stage,
         manual_review_section,
+        instructions_stage,
         ai_review_section
     ],
     "ai_only": [
         intro_section,
         read_section,
+        instructions_stage,
         ai_review_section
     ],
     "grad_human_ai": [
         intro_section,
+        instructions_stage,
         confidence_survey_section,
         read_section,
+        instructions_stage,
         manual_review_section,
+        instructions_stage,
         ai_review_section
     ],
     "grad_ai_only": [
         intro_section,
+        instructions_stage,
         confidence_survey_section,
+        instructions_stage,
         read_section,
+        instructions_stage,
         ai_review_section
     ]
 }
