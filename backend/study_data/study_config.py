@@ -1,5 +1,5 @@
 STUDY_CONFIG = {
-  "min_read_minutes": 5,
+  "min_read_minutes": 0,
   "manual_review_max_minutes": None,
   "ai_review_max_minutes": None,
   "timer_grace_period": 5,
