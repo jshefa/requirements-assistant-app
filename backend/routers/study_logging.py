@@ -7,6 +7,7 @@ from psycopg.types.json import Jsonb
 
 from database import get_connection
 from study_data.study_config import ANALYSIS_SURVEY
+from study_data.study_config import CONFIDENCE_SURVEY
 
 router = APIRouter(prefix="/api/study/sessions", tags=["study-logging"])
 
@@ -24,6 +25,8 @@ EventType = Literal[
     "tab_hidden",
     "tab_visible",
     "page_refreshed",
+    "survey_section_next",
+    "survey_section_previous",
 ]
 
 MANUAL_CRITERION_IDS = set(ANALYSIS_SURVEY["analysis_survey"]["choices"])
@@ -46,6 +49,10 @@ class AIReviewDecisionCreate(BaseModel):
     criterion_id: str
     decision: Literal["accept", "reject", "substitute", "suggest"]
     substituted_text: str | None = None
+
+class ConfidenceAnswerCreate(BaseModel):
+    question_id: str
+    answer: Any
 
 def _get_session(conn, session_id: UUID, *, for_update: bool = False):
     sql = "SELECT current_stage, completed_at FROM study_sessions WHERE id = %s"
@@ -222,4 +229,67 @@ def save_ai_decision(session_id: UUID, data: AIReviewDecisionCreate):
 
     return {"id": saved["id"], "decided_at": saved["decided_at"]}
 
-# TODO: confidence enpoints 
+def _confidence_question_ids(phase):
+    ids = set()
+
+    for section in CONFIDENCE_SURVEY[phase]:
+        for question in section.get("questions", []):
+            ids.add(question["id"])
+
+        for group in section.get("groups", []):
+            for question in group["questions"]:
+                ids.add(question["id"])
+
+    return ids
+
+CONFIDENCE_QUESTION_IDS = {
+    "confidence": _confidence_question_ids("pre"),
+    "post_confidence": _confidence_question_ids("post"),
+}
+
+@router.get("/{session_id}/confidence-answers")
+def get_confidence_answers(session_id: UUID):
+    with get_connection() as conn:
+        _get_session(conn, session_id)
+
+        rows = conn.execute("""
+            SELECT question_id, answer, answered_at
+            FROM final_confidence_answers
+            WHERE session_id = %s
+            ORDER BY question_id
+        """, (session_id,)).fetchall()
+
+    return rows
+
+@router.post("/{session_id}/confidence-answers")
+def save_confidence_answer(session_id: UUID, data: ConfidenceAnswerCreate):
+    with get_connection() as conn:
+        session = _get_session(conn, session_id, for_update=True)
+        stage = session["current_stage"]
+
+        if stage not in CONFIDENCE_QUESTION_IDS:
+            raise HTTPException(
+                status_code=409,
+                detail="Session is not in a confidence survey stage",
+            )
+
+        _require_active_stage(session, stage)
+
+        if data.question_id not in CONFIDENCE_QUESTION_IDS[stage]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid confidence survey question for this stage",
+            )
+
+        saved = conn.execute("""
+            INSERT INTO confidence_answers
+                (session_id, question_id, answer)
+            VALUES (%s, %s, %s)
+            RETURNING id, answered_at
+        """, (
+            session_id,
+            data.question_id,
+            Jsonb(data.answer),
+        )).fetchone()
+
+    return {"id": saved["id"], "answered_at": saved["answered_at"]}

@@ -54,3 +54,21 @@ export async function saveAIDecision(
   );
   return res.data;
 }
+
+export async function getConfidenceAnswers(sessionId) {
+  const res = await axios.get(
+    `/api/study/sessions/${sessionId}/confidence-answers`,
+  );
+  return res.data;
+}
+
+export async function saveConfidenceAnswer(sessionId, questionId, answer) {
+  const res = await axios.post(
+    `/api/study/sessions/${sessionId}/confidence-answers`,
+    {
+      question_id: questionId,
+      answer,
+    },
+  );
+  return res.data;
+}

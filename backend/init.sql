@@ -13,7 +13,7 @@ CREATE TABLE confidence_answers (
     id                  INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     session_id UUID     NOT NULL REFERENCES study_sessions(id),
     question_id         TEXT NOT NULL,
-    answer              INTEGER NOT NULL,
+    answer              JSONB NOT NULL,
     answered_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -80,6 +80,8 @@ CREATE TABLE study_stage_history (
     - tab_hidden : participant tabs out from experiment
     - tab_visible : participant tabs into experiment
     - page_refreshed : participant refreshes the page 
+    - survey_section_next : participant clicks next requirement within survey section
+    - survey_section_previous : participant clicks next requirement within survey section
 */
 CREATE TABLE study_interaction_events (
     id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

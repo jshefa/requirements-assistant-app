@@ -9,6 +9,7 @@ import {
 } from "../../api/studyLogging";
 import CriterionOption from "../../components/CriterionOption";
 import StudyReviewLayout from "../../components/research/StudyReviewLayout";
+import StudyReferencePanel from "../../components/research/StudyReferencePanel";
 import "./ManualReview.css";
 
 function normalizeRequirements(raw) {
@@ -396,6 +397,13 @@ export default function ManualReview({
       progressMax={requirements.length}
       scrollKey={index}
       timer={timer}
+      referencePanel={
+        <StudyReferencePanel sessionId={sessionId} requirementId={requirement.id} />
+      }
+      onReferenceToggle={(open) => logEvent({
+        event_type: open ? "context_opened" : "context_closed",
+        requirement_id: requirement.id,
+      })}
       footerStatus={
         <div className="manual-review__feedback">
           {error && (

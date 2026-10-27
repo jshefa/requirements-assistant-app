@@ -31,26 +31,36 @@ STAGE_FLOWS = {
     "human_ai": [
         "intro",
         "reading",
+        "manual_instructions",
         "manual_review",
+        "ai_instructions",
         "ai_review",
     ],
     "ai_only": [
         "intro",
         "reading",
+        "ai_instructions",
         "ai_review",
     ],
     "grad_human_ai": [
         "intro",
+        "confidence_instructions",
         "confidence",
         "reading",
+        "manual_instructions",
         "manual_review",
+        "ai_instructions",
         "ai_review",
+        "post_confidence"
     ],
     "grad_ai_only": [
         "intro",
+        "confidence_instructions",
         "confidence",
         "reading",
+        "ai_instructions",
         "ai_review",
+        "post_confidence"
     ]
 }
 

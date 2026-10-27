@@ -9,3 +9,8 @@ export async function getAnalysisSurvey() {
   const response = await axios.get(`/api/study/materials/analysis-survey`);
   return response.data;
 }
+
+export async function getConfidenceSurvey() {
+  const response = await axios.get(`/api/study/materials/confidence-survey`);
+  return response.data;
+}

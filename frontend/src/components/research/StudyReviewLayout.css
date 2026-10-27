@@ -2,18 +2,35 @@
    24px vertical padding on desktop and 16px on small screens. */
 .study-review-layout {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   height: calc(100dvh - 2 * var(--space-6));
   min-height: 0;
-  overflow: hidden;
   background: var(--color-bg);
   color: var(--color-text);
+}
+
+.study-review-layout__main {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
 }
 
 /* Only the research review screens use the wider container. Other pages,
    including the normal prototype, keep the existing .app-main width. */
 .app-main:has(> .study-review-layout) {
   max-width: 1180px;
+}
+
+/* Expand the overall workspace while keeping most of the width for the review. */
+.app-main:has(> .study-review-layout--references-open) {
+  max-width: 1550px;
+}
+
+.study-review-layout--references-open {
+  grid-template-columns: minmax(0, 1fr) 450px;
+  gap: var(--space-4);
 }
 
 /* Override the old standalone review-page margins without affecting prototype mode. */
@@ -74,13 +91,62 @@
   line-height: var(--leading-normal);
 }
 
-.study-review-layout__progress-summary {
+.study-review-layout__heading-tools {
   grid-column: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* Keep the requirement progress unboxed, with a separate neutral References button. */
+.study-review-layout__reference-toggle {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  box-shadow: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.study-review-layout__reference-toggle svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.study-review-layout__reference-toggle:hover {
+  background: var(--color-bg);
+}
+
+.study-review-layout__reference-toggle:focus-visible {
+  position: relative;
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.study-review-layout__progress-summary {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center;
   gap: var(--space-1);
+  padding: 0;
   font-size: var(--text-sm);
   text-align: right;
 }
@@ -110,6 +176,55 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* References are a separate full-height panel alongside the entire review. */
+.study-review-layout__sidebar {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.study-review-layout__sidebar[hidden] {
+  display: none;
+}
+
+.study-review-layout__sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.study-review-layout__sidebar-header button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-xl);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.study-review-layout__sidebar-header button:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+}
+
+.study-review-layout__sidebar-content {
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .study-review-layout__content {
@@ -163,8 +278,25 @@
   line-height: 1.2;
 }
 
+@media (max-width: 1400px) {
+  /* On narrower screens, preserve the review width and overlay references. */
+  .study-review-layout--references-open {
+    grid-template-columns: minmax(0, 1fr);
+    position: relative;
+  }
+
+  .study-review-layout__sidebar:not([hidden]) {
+    position: absolute;
+    inset: 0 0 0 auto;
+    z-index: 4;
+    width: min(450px, 92%);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
 @media (max-width: 760px) {
   .study-review-layout__heading {
+    grid-template-columns: auto minmax(0, 1fr);
     gap: var(--space-2);
   }
 
@@ -173,10 +305,13 @@
   }
 
   .study-review-layout__timer {
+    grid-column: 1;
     grid-row: 2;
+    justify-content: flex-start;
   }
 
-  .study-review-layout__progress-summary {
+  .study-review-layout__heading-tools {
+    grid-column: 2;
     grid-row: 2;
   }
 }
@@ -192,8 +327,29 @@
     padding: var(--space-3);
   }
 
+  .study-review-layout__heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .study-review-layout__timer {
+    grid-column: 1;
+    justify-content: flex-start;
+  }
+
+  .study-review-layout__heading-tools {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: stretch;
+    justify-content: space-between;
+  }
+
   .study-review-layout__progress-summary {
     font-size: var(--text-xs);
+  }
+
+  .study-review-layout__reference-toggle {
+    font-size: var(--text-xs);
+    padding: 8px var(--space-2);
   }
 
   .study-review-layout__footer {

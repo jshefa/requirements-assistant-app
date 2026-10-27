@@ -36,3 +36,9 @@ def get_conops_image():
 @router.get("/analysis-survey")
 def get_analysis_survey():
     return ANALYSIS_SURVEY
+
+
+@router.get("/confidence-survey")
+def get_confidence_survey():
+    from study_data.study_config import CONFIDENCE_SURVEY
+    return CONFIDENCE_SURVEY

@@ -40,7 +40,7 @@ export default function IntroPage({ onContinue }) {
           </li>
           <li>
             For some sections of this study, you will have a time limit. Please
-            ensure keep a steady pace in order to finish on time.
+            keep a steady pace in order to finish on time.
           </li>
         </ul>
 
