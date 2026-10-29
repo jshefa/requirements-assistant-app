@@ -47,3 +47,5 @@ frontend/e2e/fixtures/
 
 api_keys.json
 backend/data/
+
+exports/
