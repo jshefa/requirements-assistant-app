@@ -1,47 +1,72 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo } from "react";
+import "./CriterionCard.css";
+import { useConfig } from "../contexts/ConfigContext";
 
-export default function CriterionCard({ evaluation, originalText, feedback, onFeedbackChange }) {
-  const [showSatisfiedEdit, setShowSatisfiedEdit] = useState(false)
-  const [showNotes, setShowNotes] = useState(false)
+export default function CriterionCard({
+  evaluation,
+  originalText,
+  feedback,
+  onFeedbackChange,
+}) {
+  const [showSatisfiedEdit, setShowSatisfiedEdit] = useState(
+    feedback.user_action === "suggest",
+  );
+  const [showNotes, setShowNotes] = useState(false);
+  const { config } = useConfig();
+  const researchMode = config?.app_mode === "research";
 
-  const { criterion_id, criterion_name, satisfied, explanation, affected_text, suggested_replacement } = evaluation
+  const {
+    criterion_id,
+    criterion_name,
+    satisfied,
+    explanation,
+    affected_text,
+    suggested_replacement,
+  } = evaluation;
 
   const handleActionChange = (action) => {
-    const next = { ...feedback, user_action: action }
-    if (action === 'accept') next.user_text = suggested_replacement || affected_text || ''
-    if (action === 'reject') next.user_text = affected_text || ''
-    if (action === 'modify') next.user_text = next.user_text || suggested_replacement || affected_text || ''
-    onFeedbackChange(next)
-  }
+    const next = { ...feedback, user_action: action };
+    if (action === "accept")
+      next.user_text = suggested_replacement || affected_text || "";
+    if (action === "reject") next.user_text = affected_text || "";
+    if (action === "modify")
+      next.user_text =
+        next.user_text || suggested_replacement || affected_text || "";
+    onFeedbackChange(next);
+  };
 
   // Live preview for accept (suggested), modify (user text), reject (original unchanged)
   const preview = useMemo(() => {
-    if (!feedback.user_action || !originalText) return null
-    if (feedback.user_action === 'reject') {
-      return originalText // no change
+    if (!feedback.user_action || !originalText) return null;
+    if (feedback.user_action === "reject") {
+      return originalText; // no change
     }
-    if (!affected_text) return null
-    const pos = originalText.indexOf(affected_text)
-    if (pos === -1) return originalText
+    if (!affected_text) return null;
+    const pos = originalText.indexOf(affected_text);
+    if (pos === -1) return originalText;
     const replacement =
-      feedback.user_action === 'accept'
-        ? (suggested_replacement || affected_text)
-        : (feedback.user_text || affected_text)
+      feedback.user_action === "accept"
+        ? suggested_replacement || affected_text
+        : feedback.user_text || affected_text;
     return (
       originalText.slice(0, pos) +
-      '⟪' + replacement + '⟫' +
+      "⟪" +
+      replacement +
+      "⟫" +
       originalText.slice(pos + affected_text.length)
-    )
-  }, [originalText, affected_text, suggested_replacement, feedback])
+    );
+  }, [originalText, affected_text, suggested_replacement, feedback]);
 
   return (
-    <div className={`criterion-card ${satisfied ? 'satisfied' : 'violated'}`}>
+    <div className={`criterion-card ${satisfied ? "satisfied" : "violated"}`}>
       {/* Header */}
       <div className="criterion-header">
-        <span className="criterion-badge">{criterion_id}</span>
+        {!researchMode && (
+          <span className="criterion-badge">{criterion_id}</span>
+        )}
         <span className="criterion-name">{criterion_name}</span>
         <span className="criterion-status">
-          {satisfied ? '✓ Satisfied' : '✗ Violated'}
+          {satisfied ? "✓ Satisfied" : "✗ Violated"}
         </span>
       </div>
 
@@ -63,7 +88,9 @@ export default function CriterionCard({ evaluation, originalText, feedback, onFe
           {suggested_replacement && (
             <div className="compare-box suggested">
               <span className="eyebrow">Suggested</span>
-              <span className="compare-box-content">{suggested_replacement}</span>
+              <span className="compare-box-content">
+                {suggested_replacement}
+              </span>
             </div>
           )}
         </div>
@@ -72,34 +99,42 @@ export default function CriterionCard({ evaluation, originalText, feedback, onFe
       {/* VIOLATED: action buttons */}
       {!satisfied && (
         <div className="criterion-actions">
-          {['accept', 'reject', 'modify'].map((action) => {
-            const isSelected = feedback.user_action === action
+          {["accept", "reject", "modify"].map((action) => {
+            const isSelected = feedback.user_action === action;
             return (
               <button
                 key={action}
                 type="button"
                 onClick={() => handleActionChange(action)}
                 aria-pressed={isSelected}
-                className={`action-btn ${action}${isSelected ? ' selected' : ''}`}
+                className={`action-btn ${action}${isSelected ? " selected" : ""}`}
               >
                 {action.charAt(0).toUpperCase() + action.slice(1)}
               </button>
-            )
+            );
           })}
         </div>
       )}
 
       {/* Modify text input */}
-      {!satisfied && feedback.user_action === 'modify' && (
+      {!satisfied && feedback.user_action === "modify" && (
         <div className="criterion-field">
-          <label htmlFor={`replacement-${criterion_id}`}>Your replacement text:</label>
+          <label htmlFor={`replacement-${criterion_id}`}>
+            Your replacement text:
+          </label>
           <input
             id={`replacement-${criterion_id}`}
             type="text"
             className="text-input"
-            value={feedback.user_text || ''}
-            onChange={(e) => onFeedbackChange({ ...feedback, user_text: e.target.value, user_action: 'modify' })}
-            placeholder={affected_text || 'Enter your replacement...'}
+            value={feedback.user_text || ""}
+            onChange={(e) =>
+              onFeedbackChange({
+                ...feedback,
+                user_text: e.target.value,
+                user_action: "modify",
+              })
+            }
+            placeholder={affected_text || "Enter your replacement..."}
           />
         </div>
       )}
@@ -112,8 +147,8 @@ export default function CriterionCard({ evaluation, originalText, feedback, onFe
         </div>
       )}
 
-      {/* Notes (violated only) */}
-      {!satisfied && (
+      {/* Notes (violated only) ignore for research mode */}
+      {!researchMode && !satisfied && (
         <div>
           <button
             type="button"
@@ -121,14 +156,16 @@ export default function CriterionCard({ evaluation, originalText, feedback, onFe
             aria-expanded={showNotes}
             onClick={() => setShowNotes(!showNotes)}
           >
-            {showNotes ? 'Hide notes' : 'Add notes'}
+            {showNotes ? "Hide notes" : "Add notes"}
           </button>
           {showNotes && (
             <input
               type="text"
               className="text-input disclosure-field"
-              value={feedback.notes || ''}
-              onChange={(e) => onFeedbackChange({ ...feedback, notes: e.target.value })}
+              value={feedback.notes || ""}
+              onChange={(e) =>
+                onFeedbackChange({ ...feedback, notes: e.target.value })
+              }
               placeholder="Optional notes..."
               aria-label="Notes"
             />
@@ -145,21 +182,24 @@ export default function CriterionCard({ evaluation, originalText, feedback, onFe
             aria-expanded={showSatisfiedEdit}
             onClick={() => setShowSatisfiedEdit(!showSatisfiedEdit)}
           >
-            {showSatisfiedEdit ? 'Cancel' : 'Suggest a change anyway'}
+            {showSatisfiedEdit ? "Cancel" : "Suggest a change anyway"}
           </button>
           {showSatisfiedEdit && (
             <input
+              id={`suggestion-${criterion_id}`}
               type="text"
               className="text-input disclosure-field"
-              value={feedback.user_text || ''}
-              onChange={(e) => onFeedbackChange({
-                ...feedback,
-                criterion_id,
-                user_text: e.target.value,
-                // 'suggest', not 'modify': this criterion was not flagged, so
-                // it is not an accept/reject/modify decision on a violation.
-                user_action: 'suggest',
-              })}
+              value={feedback.user_text || ""}
+              onChange={(e) =>
+                onFeedbackChange({
+                  ...feedback,
+                  criterion_id,
+                  user_text: e.target.value,
+                  // 'suggest', not 'modify': this criterion was not flagged, so
+                  // it is not an accept/reject/modify decision on a violation.
+                  user_action: "suggest",
+                })
+              }
               placeholder="Describe your suggested modification..."
               aria-label="Suggested modification"
             />
@@ -167,5 +207,5 @@ export default function CriterionCard({ evaluation, originalText, feedback, onFe
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -13,10 +13,19 @@ from dotenv import load_dotenv
 import asyncio
 from urllib.parse import urlparse
 import json
-from ai_analyzer import AnalysisContext
-
+from routers import study_sessions, study_materials, study_logging
+from provider_config import (
+    SUPPORTED_PROVIDERS,
+    PROVIDER_ENV_KEYS,
+    DATA_DIR,
+    API_KEYS_FILE,
+    load_json_keys as _load_json_keys,
+    get_server_api_key as _server_api_key,
+    get_provider_labels as _get_provider_labels,
+    get_provider,
+)
 from requirements_parser import parse_requirements, validate_requirements
-from ai_analyzer import analyze_all_requirements
+from ai_analyzer import analyze_all_requirements, AnalysisContext
 from feedback_storage import (
     save_analysis, save_feedback, load_analysis, load_feedback,
     save_set_analysis, load_set_analysis, save_docx, load_docx,
@@ -60,7 +69,7 @@ def _get_set_analyzer():
         _set_analyzer = SetAnalyzer(_get_ontology_service())
     return _set_analyzer
 
-def _get_ontology_service():
+def _get_ontology_service(): 
     global _ont_service
     if _ont_service is None:
         base = Path(__file__).parent / 'ontology'
@@ -72,11 +81,14 @@ def _get_ontology_service():
     return _ont_service
 
 app = FastAPI(title="INCOSE Requirements Analyzer API")
+app.include_router(study_sessions.router)
+app.include_router(study_materials.router)
+app.include_router(study_logging.router)
 
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://stse-research-experiment.stse-research.workers.dev", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -84,48 +96,6 @@ app.add_middleware(
 
 BASE_DIR = Path(__file__).parent.parent
 FRONTEND_DIST = BASE_DIR / 'frontend' / 'dist'
-
-
-SUPPORTED_PROVIDERS = ["anthropic", "openai", "ollama"]
-
-PROVIDER_ENV_KEYS = {
-    'anthropic': 'ANTHROPIC_API_KEY',
-    'openai': 'OPENAI_API_KEY',
-}
-
-
-def _get_provider_labels() -> dict:
-    """Returns the model labels for the frontend. Loads the model labels from the env vars for 
-    each provider."""
-    current_anthropic_model = os.getenv("ANTHROPIC_MODEL", "Anthropic model")
-    current_openai_model = os.getenv("OPENAI_MODEL", "OpenAI model")
-    current_ollama_model = os.getenv("OLLAMA_MODEL", "Local model")
-    
-    return {
-        'anthropic': f"{current_anthropic_model} (Anthropic)",
-        'openai': f"{current_openai_model} (OpenAI)",
-        'ollama': f"{current_ollama_model} (Ollama)"
-    }
-
-DATA_DIR = Path(__file__).parent / "data"
-API_KEYS_FILE = DATA_DIR / "api_keys.json"
-
-def _load_json_keys() -> dict:
-    """Loads the api keys that have been saved in the /data/api_keys.json file. This is used
-    so that the user can set their keys in the browser, then later retrieve them for AI calls."""
-    if API_KEYS_FILE.exists():
-        try:
-            return json.loads(API_KEYS_FILE.read_text(encoding="utf-8"))
-        except:
-            return {}
-    return {}
-
-def _server_api_key(provider: str) -> str:
-    """Return the operator-configured key for a provider, or '' if unset."""
-    if provider not in PROVIDER_ENV_KEYS: # don't read file if provider doesn't use key
-        return ""
-    saved_keys = _load_json_keys()
-    return saved_keys.get(provider, '').strip()
 
 async def _is_ollama_running() -> bool: 
     """Returns whether or not ollama is running. If it is not, then it will not be listed as an available provider. It does
@@ -144,20 +114,17 @@ async def _is_ollama_running() -> bool:
         return True
     except (OSError, asyncio.TimeoutError, ValueError):
         return False
-    
 
 async def _available_providers() -> list:
     """Providers that currently have a key configured on the server."""
-    available = []
+    available = [
+        p for p in PROVIDER_ENV_KEYS
+        if _server_api_key(p)
+    ]
 
-    # for the providers that use keys, we check from the saved file. Ollama has to be checked
-    # separately since it doesn't use a key. 
-    saved_keys = list(_load_json_keys())
-    ollama_on = await _is_ollama_running()
-
-    available.extend(saved_keys)
-    if ollama_on:
+    if await _is_ollama_running():
         available.append("ollama")
+
     return available
 
 # ===========================================================
@@ -172,7 +139,7 @@ async def _available_providers() -> list:
 
 # Paths that must stay reachable without a code: the config probe the gate
 # itself depends on, and the code-verification endpoint.
-_OPEN_API_PATHS = {'/api', '/api/config', '/api/access/verify'}
+_OPEN_API_PATHS = {'/api', '/api/config', '/api/access/verify', '/api/study/materials/conops-image'}
 
 # Per-IP failed-attempt tracking, so a short shared code can't be brute forced.
 _MAX_FAILED_ATTEMPTS = 10
@@ -312,12 +279,15 @@ async def get_config():
 
     provider_labels = _get_provider_labels()
 
+    APP_MODE = os.getenv("APP_MODE", "prototype").lower(); 
+
     providers = [{"value": p, 
                   "label": provider_labels.get(p, p), 
                   "isAvailable": p in available, 
                   "requiresKey": p in PROVIDER_ENV_KEYS} for p in SUPPORTED_PROVIDERS]
     
     return {
+        "app_mode": APP_MODE,
         "provider": provider,
         "model_label": provider_labels.get(provider, provider),
         "providers": providers,
@@ -456,6 +426,7 @@ async def upload_files(
                 sum(1 for ev in req.get('criteria_evaluations', []) if not ev.get('satisfied', True))
                 for req in analysis['requirements']
             ),
+            "failed_count": sum(1 for req in analysis['requirements'] if req.get('error'))
         }
     except Exception as e:
         print(f"ERROR: {str(e)}")

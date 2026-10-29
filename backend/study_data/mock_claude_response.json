@@ -1,0 +1,261 @@
+{
+  "individualEvaluations": {
+    "FR1": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "The requirement uses the prohibited construction 'shall be able to' instead of the standard 'The system shall [imperative verb]' pattern.",
+        "affected_text": "shall be able to move",
+        "suggested_replacement": "shall move"
+      },
+      {
+        "criterion_id": "A4",
+        "name": "Unambiguous",
+        "explanation": "The article 'a point mass' and 'an origin point' are indefinite, while the notes define one specific point mass and one specific origin; indefinite articles allow multiple interpretations.",
+        "affected_text": "a point mass from an origin point",
+        "suggested_replacement": "the point mass from the origin point"
+      }
+    ],
+    "FR2": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "The requirement uses the prohibited construction 'shall be able to' rather than a direct imperative verb.",
+        "affected_text": "shall be able to move",
+        "suggested_replacement": "shall move"
+      }
+    ],
+    "PR1": [
+      {
+        "criterion_id": "A4",
+        "name": "Unambiguous",
+        "explanation": "The qualitative adverb 'accurately' is redundant and undefined alongside the quantified tolerance, and 'every Cartesian direction' does not state the reference coordinate frame.",
+        "affected_text": "accurately with +/- 2.5mm [0.1\u201d] accuracy in every Cartesian direction",
+        "suggested_replacement": "with a positional error of \u00b12.5 mm [0.1 in] along each of the X, Y, and Z axes of the coordinate frame of Figure 1"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The \u00b12.5 mm tolerance has no traceable basis in the ConOps, project context, or any cited engineering analysis.",
+        "affected_text": "+/- 2.5mm [0.1\u201d] accuracy",
+        "suggested_replacement": "\u00b12.5 mm [0.1 in] accuracy (per [cite source/analysis])"
+      },
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "Referencing another requirement ID in place of the action makes the statement non-self-contained, and 'shall execute FR1 accurately' is not the standard imperative-verb structure; spacing of the unit '2.5mm' is also non-conforming.",
+        "affected_text": "shall execute FR1 accurately with +/- 2.5mm",
+        "suggested_replacement": "shall place the point mass at the destination point within \u00b12.5 mm"
+      }
+    ],
+    "PR2": [
+      {
+        "criterion_id": "A4",
+        "name": "Unambiguous",
+        "explanation": "'accurately' is an undefined qualitative descriptor and the coordinate reference frame for 'every Cartesian direction' is not stated.",
+        "affected_text": "accurately with +/- 2.5mm [0.1\u201d] accuracy in every Cartesian direction",
+        "suggested_replacement": "with a positional error of \u00b12.5 mm [0.1 in] along each of the X, Y, and Z axes of the coordinate frame of Figure 1"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The \u00b12.5 mm return tolerance is not traceable to the ConOps, project context, or any supporting analysis.",
+        "affected_text": "+/- 2.5mm [0.1\u201d] accuracy",
+        "suggested_replacement": "\u00b12.5 mm [0.1 in] accuracy (per [cite source/analysis])"
+      },
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "The statement relies on a requirement ID instead of an imperative action and uses non-conforming unit spacing.",
+        "affected_text": "shall execute FR2 accurately with +/- 2.5mm",
+        "suggested_replacement": "shall return the point mass to the origin point within \u00b12.5 mm"
+      }
+    ],
+    "PR3": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "Uses both the prohibited 'shall be able to' construction and the prohibited 'no more than' phrasing.",
+        "affected_text": "shall be able to execute FR1 in no more than 30 seconds",
+        "suggested_replacement": "shall complete the displacement of the point mass to the destination point within 30 seconds"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The 30-second maximum duration is not traceable to any stated stakeholder need, ConOps statement, or supporting analysis.",
+        "affected_text": "30 seconds",
+        "suggested_replacement": "30 seconds (per [cite source/analysis])"
+      }
+    ],
+    "PR4": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "Uses the prohibited 'shall be able to' construction and the prohibited 'no less than' phrasing.",
+        "affected_text": "shall be able to execute FR1 in no less than 5 seconds",
+        "suggested_replacement": "shall complete the displacement of the point mass to the destination point in 5 seconds or more"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The 5-second minimum duration has no traceable justification in the provided context or any cited analysis.",
+        "affected_text": "5 seconds",
+        "suggested_replacement": "5 seconds (per [cite source/analysis])"
+      },
+      {
+        "criterion_id": "A2",
+        "name": "Necessary",
+        "explanation": "A minimum execution time is not derived from any stated need or ConOps operation; its purpose (e.g., limiting imparted loads on ISS) is not established.",
+        "affected_text": "in no less than 5 seconds",
+        "suggested_replacement": "in 5 seconds or more, to limit imparted acceleration loads on the ISS [cite need]"
+      }
+    ],
+    "PR5": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "Uses both the prohibited 'shall be able to' construction and the prohibited 'no more than' phrasing.",
+        "affected_text": "shall be able to execute FR2 in no more than 30 seconds",
+        "suggested_replacement": "shall complete the return of the point mass to the origin point within 30 seconds"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The 30-second limit is not traceable to the ConOps, project context, or supporting engineering work.",
+        "affected_text": "30 seconds",
+        "suggested_replacement": "30 seconds (per [cite source/analysis])"
+      }
+    ],
+    "PR6": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "Uses the prohibited 'shall be able to' construction and the prohibited 'no less than' phrasing.",
+        "affected_text": "shall be able to execute FR2 in no less than 5 seconds",
+        "suggested_replacement": "shall complete the return of the point mass to the origin point in 5 seconds or more"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The 5-second minimum has no stated traceability to a need, ConOps element, or analysis.",
+        "affected_text": "5 seconds",
+        "suggested_replacement": "5 seconds (per [cite source/analysis])"
+      },
+      {
+        "criterion_id": "A2",
+        "name": "Necessary",
+        "explanation": "The need for a lower bound on the return duration is not established by any stakeholder need or ConOps statement.",
+        "affected_text": "in no less than 5 seconds",
+        "suggested_replacement": "in 5 seconds or more, to limit imparted acceleration loads on the ISS [cite need]"
+      }
+    ],
+    "PR7": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "Uses the prohibited 'shall be able to' construction and contains a unit typo (acceleration written as 'm/s2' instead of m/s\u00b2).",
+        "affected_text": "shall be able to move a point mass of 3.6 kg perpendicularly to normal gravity (9.81 m/s2)",
+        "suggested_replacement": "shall move a 3.6 kg point mass along a path perpendicular to a gravitational acceleration of 9.81 m/s\u00b2"
+      },
+      {
+        "criterion_id": "A4",
+        "name": "Unambiguous",
+        "explanation": "'normal gravity' and 'perpendicularly to normal gravity' are undefined terms with no stated direction reference (Figure 1 defines gravity along -Y), allowing multiple interpretations.",
+        "affected_text": "perpendicularly to normal gravity (9.81 m/s2)",
+        "suggested_replacement": "along a path perpendicular to the gravity vector (-Y axis of Figure 1) under an acceleration of 9.81 m/s\u00b2"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The 3.6 kg mass value is not traceable to the provided context, and the 1 g condition conflicts with the ConOps statement that operation occurs on board the ISS (microgravity).",
+        "affected_text": "3.6 kg perpendicularly to normal gravity (9.81 m/s2)",
+        "suggested_replacement": "3.6 kg [cite source] under the 9.81 m/s\u00b2 ground-test condition [cite justification]"
+      }
+    ],
+    "ER1": [
+      {
+        "criterion_id": "A4",
+        "name": "Unambiguous",
+        "explanation": "'comparable to that of Earth' and 'low humidity' are qualitative descriptors without measurable definitions.",
+        "affected_text": "an atmosphere comparable to that of Earth. Assume 21 degrees centigrade [70 degrees Fahrenheit], with low humidity",
+        "suggested_replacement": "an atmosphere of 21 \u00b0C [70 \u00b0F] and a relative humidity of 25% to 50%"
+      },
+      {
+        "criterion_id": "A6",
+        "name": "Singular",
+        "explanation": "The statement bundles temperature, humidity, and pressure environmental constraints into one requirement.",
+        "affected_text": "21 degrees centigrade [70 degrees Fahrenheit], with low humidity, and pressurized to 100 kPA [750 mm Hg, 14.5 psi]",
+        "suggested_replacement": "21 \u00b0C [70 \u00b0F] (separate requirements to state humidity and pressure conditions)"
+      },
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "The requirement is split into a second 'Assume' sentence rather than a single conforming statement, and the pressure unit is mistyped as 'kPA' instead of 'kPa'.",
+        "affected_text": "Assume 21 degrees centigrade [70 degrees Fahrenheit], with low humidity, and pressurized to 100 kPA [750 mm Hg, 14.5 psi].",
+        "suggested_replacement": "at 21 \u00b0C [70 \u00b0F] and 100 kPa [750 mmHg, 14.5 psi]."
+      }
+    ],
+    "ER2": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "The requirement is phrased negatively ('shall not contribute') instead of as a positive statement.",
+        "affected_text": "shall not contribute any particulates (e.g. dust) to the ISS atmosphere",
+        "suggested_replacement": "shall contain all generated particulates (e.g., dust) within its enclosure"
+      },
+      {
+        "criterion_id": "A4",
+        "name": "Unambiguous",
+        "explanation": "'any particulates' gives no measurable size or quantity threshold, so compliance cannot be uniquely interpreted or verified.",
+        "affected_text": "any particulates (e.g. dust)",
+        "suggested_replacement": "particulates larger than 100 \u00b5m, at a release rate exceeding [X] particles per operation"
+      }
+    ],
+    "ER3": [
+      {
+        "criterion_id": "A2",
+        "name": "Necessary",
+        "explanation": "The requirement mandates a specific design solution (enclosing components) rather than stating the needed characteristic of preventing lubricant release.",
+        "affected_text": "shall enclose all lubricated components to prevent lubricants from leaking into",
+        "suggested_replacement": "shall contain all lubricants used within it, preventing their release into"
+      },
+      {
+        "criterion_id": "A3",
+        "name": "Appropriate",
+        "explanation": "The statement addresses internal components (a subsystem-level detail) rather than a characteristic of the system of interest as a whole.",
+        "affected_text": "all lubricated components",
+        "suggested_replacement": "all lubricants it uses"
+      },
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "The clause is expressed in a negative/prevention form rather than as a positive capability statement.",
+        "affected_text": "to prevent lubricants from leaking into the atmosphere of the ISS",
+        "suggested_replacement": "such that lubricants remain contained within the system during ISS operations"
+      }
+    ],
+    "RR1": [
+      {
+        "criterion_id": "A10",
+        "name": "Conforming",
+        "explanation": "The requirement is phrased negatively and uses the prohibited 'not ... more than' construction.",
+        "affected_text": "shall not use more than 1.5 Watt-hours",
+        "suggested_replacement": "shall consume 1.5 W\u00b7h or less of electrical energy"
+      },
+      {
+        "criterion_id": "A9",
+        "name": "Correct",
+        "explanation": "The 1.5 Watt-hour energy budget is not traceable to any stated stakeholder need, ConOps element, or supporting analysis.",
+        "affected_text": "1.5 Watt-hours",
+        "suggested_replacement": "1.5 W\u00b7h (per [cite ISS power budget source])"
+      },
+      {
+        "criterion_id": "A4",
+        "name": "Unambiguous",
+        "explanation": "'all operations' is undefined within the requirement; the note partially clarifies duration but not which operations are included.",
+        "affected_text": "to support all operations",
+        "suggested_replacement": "to complete one displacement (FR1) and one return (FR2) cycle"
+      }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+/* Instructions screen, slightly narrower and taller than the study introduction. */
+.study-instructions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: var(--space-6) 0;
+}
+
+.study-instructions__card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 670px;
+  min-height: 480px;
+  padding: var(--space-10);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+
+.study-instructions__card h1 {
+  margin: 0 0 var(--space-8);
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  text-align: center;
+}
+
+.study-instructions__description {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-base);
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.study-instructions__error {
+  margin-top: var(--space-5);
+}
+
+.study-instructions__footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: var(--space-8);
+}
+
+.study-instructions__button {
+  min-width: 170px;
+  padding: 10px 22px;
+}
+
+@media (max-width: 640px) {
+  .study-instructions {
+    min-height: 60vh;
+  }
+
+  .study-instructions__card {
+    min-height: 420px;
+    padding: var(--space-6);
+  }
+
+  .study-instructions__card h1 {
+    margin-bottom: var(--space-6);
+  }
+
+  .study-instructions__footer {
+    padding-top: var(--space-6);
+  }
+
+  .study-instructions__button {
+    width: 100%;
+  }
+}

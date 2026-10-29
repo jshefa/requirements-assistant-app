@@ -1,150 +1,168 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import axios from 'axios'
-import RequirementCard from '../components/RequirementCard'
-import FeedbackControls from '../components/FeedbackControls'
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import axios from "axios";
+import RequirementCard from "../components/RequirementCard";
+import FeedbackControls from "../components/FeedbackControls";
+import "./ReviewPage.css";
 
 export default function ReviewPage() {
-  const { sessionId } = useParams()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const reviewerId = searchParams.get('reviewer')
+  const { sessionId } = useParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const reviewerId = searchParams.get("reviewer");
 
-  const [analysis, setAnalysis] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [reviewerInfo, setReviewerInfo] = useState(null)
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [reviewerInfo, setReviewerInfo] = useState(null);
 
   // feedbackState: { [reqId-criterionId]: { criterion_id, user_action, user_text, notes } }
-  const [feedbackState, setFeedbackState] = useState({})
+  const [feedbackState, setFeedbackState] = useState({});
 
   useEffect(() => {
     const fetchAnalysis = async () => {
       try {
-        const res = await axios.get(`/api/analysis/${sessionId}`)
-        setAnalysis(res.data)
+        const res = await axios.get(`/api/analysis/${sessionId}`);
+        setAnalysis(res.data);
 
         // Initialise feedback state for all violated criteria
-        const initial = {}
+        const initial = {};
         for (const req of res.data.requirements || []) {
           for (const ev of req.criteria_evaluations || []) {
             if (!ev.satisfied) {
-              const key = `${req.req_id}-${ev.criterion_id}`
+              const key = `${req.req_id}-${ev.criterion_id}`;
               initial[key] = {
                 criterion_id: ev.criterion_id,
-                user_action: '',
-                user_text: ev.suggested_replacement || '',
-                notes: '',
-              }
+                user_action: "",
+                user_text: ev.suggested_replacement || "",
+                notes: "",
+              };
             }
           }
         }
-        setFeedbackState(initial)
+        setFeedbackState(initial);
 
         if (reviewerId) {
           try {
-            const reviewersRes = await axios.get('/api/reviewers')
-            const me = (reviewersRes.data.reviewers || []).find(r => r.reviewer_id === reviewerId)
-            setReviewerInfo(me || { reviewer_id: reviewerId, name: 'Unknown', role: 'junior' })
+            const reviewersRes = await axios.get("/api/reviewers");
+            const me = (reviewersRes.data.reviewers || []).find(
+              (r) => r.reviewer_id === reviewerId,
+            );
+            setReviewerInfo(
+              me || {
+                reviewer_id: reviewerId,
+                name: "Unknown",
+                role: "junior",
+              },
+            );
           } catch {
-            console.error('Could not load reviewer info')
+            console.error("Could not load reviewer info");
           }
         }
       } catch (err) {
-        setError(err.response?.data?.detail || 'Failed to load analysis')
+        setError(err.response?.data?.detail || "Failed to load analysis");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchAnalysis()
-  }, [sessionId, reviewerId])
+    };
+    fetchAnalysis();
+  }, [sessionId, reviewerId]);
 
-  const handleFeedbackChange = useCallback((key, fb) => {
-    setFeedbackState((prev) => ({ ...prev, [key]: fb }))
-  }, [])
+  const handleFeedbackChange = useCallback((key, requirementId, fb) => {
+    const feedback = fb ?? requirementId;
+    setFeedbackState((prev) => ({ ...prev, [key]: feedback }));
+  }, []);
 
   // Count totals
   const { totalViolated, reviewedCount } = (() => {
-    let tot = 0, rev = 0
+    let tot = 0,
+      rev = 0;
     for (const req of analysis?.requirements || []) {
       for (const ev of req.criteria_evaluations || []) {
         if (!ev.satisfied) {
-          tot++
-          const key = `${req.req_id}-${ev.criterion_id}`
-          if (feedbackState[key]?.user_action) rev++
+          tot++;
+          const key = `${req.req_id}-${ev.criterion_id}`;
+          if (feedbackState[key]?.user_action) rev++;
         }
       }
     }
-    return { totalViolated: tot, reviewedCount: rev }
-  })()
+    return { totalViolated: tot, reviewedCount: rev };
+  })();
 
   // Build final text for a requirement by applying all accepted/modified criteria fixes
   const buildFinalText = (req) => {
-    const evals = req.criteria_evaluations || []
-    const violated = evals.filter((e) => !e.satisfied && e.affected_text)
-    if (!violated.length) return req.original_text
+    const evals = req.criteria_evaluations || [];
+    const violated = evals.filter((e) => !e.satisfied && e.affected_text);
+    if (!violated.length) return req.original_text;
 
-    const original = req.original_text
-    const replacements = []
+    const original = req.original_text;
+    const replacements = [];
 
     for (const ev of violated) {
-      const key = `${req.req_id}-${ev.criterion_id}`
-      const fb = feedbackState[key]
-      if (!fb?.user_action || fb.user_action === 'reject') continue
+      const key = `${req.req_id}-${ev.criterion_id}`;
+      const fb = feedbackState[key];
+      if (!fb?.user_action || fb.user_action === "reject") continue;
 
-      const pos = original.indexOf(ev.affected_text)
-      if (pos === -1) continue
+      const pos = original.indexOf(ev.affected_text);
+      if (pos === -1) continue;
 
       const replacement =
-        fb.user_action === 'modify'
-          ? (fb.user_text || ev.suggested_replacement || ev.affected_text)
-          : (ev.suggested_replacement || ev.affected_text)
+        fb.user_action === "modify"
+          ? fb.user_text || ev.suggested_replacement || ev.affected_text
+          : ev.suggested_replacement || ev.affected_text;
 
-      replacements.push({ start: pos, end: pos + ev.affected_text.length, text: replacement })
+      replacements.push({
+        start: pos,
+        end: pos + ev.affected_text.length,
+        text: replacement,
+      });
     }
 
-    if (!replacements.length) return original
+    if (!replacements.length) return original;
 
-    replacements.sort((a, b) => b.start - a.start)
-    const filtered = []
-    let lastStart = Infinity
+    replacements.sort((a, b) => b.start - a.start);
+    const filtered = [];
+    let lastStart = Infinity;
     for (const r of replacements) {
-      if (r.end <= lastStart) { filtered.push(r); lastStart = r.start }
+      if (r.end <= lastStart) {
+        filtered.push(r);
+        lastStart = r.start;
+      }
     }
 
-    let result = original
+    let result = original;
     for (const { start, end, text } of filtered) {
-      result = result.slice(0, start) + text + result.slice(end)
+      result = result.slice(0, start) + text + result.slice(end);
     }
-    return result
-  }
+    return result;
+  };
 
   const handleSubmit = async () => {
-    setSubmitting(true)
-    setError('')
+    setSubmitting(true);
+    setError("");
 
     try {
       const requirement_feedback = (analysis?.requirements || []).map((req) => {
-        const evals = req.criteria_evaluations || []
+        const evals = req.criteria_evaluations || [];
 
         // Map criteria feedback into violation_feedback-compatible format for downstream
         const violation_feedback = evals
           .filter((ev) => !ev.satisfied)
           .map((ev) => {
-            const key = `${req.req_id}-${ev.criterion_id}`
-            const fb = feedbackState[key] || {}
+            const key = `${req.req_id}-${ev.criterion_id}`;
+            const fb = feedbackState[key] || {};
             return {
               violation_id: key,
               rule_id: ev.criterion_id,
               criterion_name: ev.criterion_name,
-              user_action: fb.user_action || 'accept',
-              ai_suggestion: ev.suggested_replacement || '',
-              user_text: fb.user_text || ev.suggested_replacement || '',
-              notes: fb.notes || '',
-            }
-          })
+              user_action: fb.user_action || "accept",
+              ai_suggestion: ev.suggested_replacement || "",
+              user_text: fb.user_text || ev.suggested_replacement || "",
+              notes: fb.notes || "",
+            };
+          });
 
         // Suggestions the reviewer volunteered on criteria the AI marked
         // satisfied ("Suggest a change anyway"). Kept in their own array rather
@@ -155,16 +173,22 @@ export default function ReviewPage() {
         // not applied to final_text.
         const suggestion_feedback = evals
           .filter((ev) => ev.satisfied)
-          .map((ev) => ({ ev, fb: feedbackState[`${req.req_id}-${ev.criterion_id}`] }))
-          .filter(({ fb }) => (fb?.user_text || '').trim() || (fb?.notes || '').trim())
+          .map((ev) => ({
+            ev,
+            fb: feedbackState[`${req.req_id}-${ev.criterion_id}`],
+          }))
+          .filter(
+            ({ fb }) =>
+              (fb?.user_text || "").trim() || (fb?.notes || "").trim(),
+          )
           .map(({ ev, fb }) => ({
             suggestion_id: `${req.req_id}-${ev.criterion_id}`,
             rule_id: ev.criterion_id,
             criterion_name: ev.criterion_name,
-            user_action: 'suggest',
-            user_text: (fb.user_text || '').trim(),
-            notes: (fb.notes || '').trim(),
-          }))
+            user_action: "suggest",
+            user_text: (fb.user_text || "").trim(),
+            notes: (fb.notes || "").trim(),
+          }));
 
         return {
           req_id: req.req_id,
@@ -172,31 +196,37 @@ export default function ReviewPage() {
           violation_feedback,
           suggestion_feedback,
           final_text: buildFinalText(req),
-          overall_notes: '',
-        }
-      })
+          overall_notes: "",
+        };
+      });
 
       // Session state lives in the server's memory, so a restart between
       // loading this page and submitting would otherwise throw the review
       // away. Send the analysis we already hold so the server can restore it.
-      const payload = { requirement_feedback, analysis }
+      const payload = { requirement_feedback, analysis };
 
       if (reviewerId) {
-        await axios.post(`/api/feedback/${sessionId}/${reviewerId}`, payload)
-        setSubmitted(true)
-        setSubmitting(false)
+        await axios.post(`/api/feedback/${sessionId}/${reviewerId}`, payload);
+        setSubmitted(true);
+        setSubmitting(false);
       } else {
-        await axios.post(`/api/feedback/${sessionId}`, payload)
-        navigate(`/download/${sessionId}`)
+        await axios.post(`/api/feedback/${sessionId}`, payload);
+        navigate(`/download/${sessionId}`);
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to submit feedback')
-      setSubmitting(false)
+      setError(err.response?.data?.detail || "Failed to submit feedback");
+      setSubmitting(false);
     }
-  }
+  };
 
-  if (loading) return <div className="loading">Loading analysis results...</div>
-  if (error && !analysis) return <div className="error-page"><p className="error-msg">{error}</p></div>
+  if (loading)
+    return <div className="loading">Loading analysis results...</div>;
+  if (error && !analysis)
+    return (
+      <div className="error-page">
+        <p className="error-msg">{error}</p>
+      </div>
+    );
 
   if (submitted && reviewerId) {
     return (
@@ -204,14 +234,15 @@ export default function ReviewPage() {
         <div className="upload-card centered">
           <h2>Feedback Submitted</h2>
           <p className="subtitle">
-            Thank you{reviewerInfo ? `, ${reviewerInfo.name}` : ''}! Your review has been recorded.
+            Thank you{reviewerInfo ? `, ${reviewerInfo.name}` : ""}! Your review
+            has been recorded.
           </p>
           <div className="progress-msg">
             Waiting for other reviewers to complete their reviews.
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -223,7 +254,11 @@ export default function ReviewPage() {
           {analysis.requirements.length} requirements &nbsp;|&nbsp;
           {totalViolated} criteria violated
           {reviewerInfo && (
-            <span> &nbsp;|&nbsp; Reviewing as: <strong>{reviewerInfo.name}</strong> ({reviewerInfo.role})</span>
+            <span>
+              {" "}
+              &nbsp;|&nbsp; Reviewing as: <strong>{reviewerInfo.name}</strong> (
+              {reviewerInfo.role})
+            </span>
           )}
         </p>
       </div>
@@ -255,5 +290,5 @@ export default function ReviewPage() {
         submitting={submitting}
       />
     </div>
-  )
+  );
 }

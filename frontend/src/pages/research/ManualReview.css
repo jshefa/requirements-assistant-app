@@ -1,0 +1,224 @@
+.manual-review {
+  width: min(100% - 32px, 920px);
+  margin: 36px auto 80px;
+  color: var(--color-text, #192536);
+}
+
+.manual-review__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: var(--space-6, 24px);
+  margin-bottom: var(--space-5, 20px);
+}
+
+.manual-review__eyebrow,
+.manual-review__section-label {
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.manual-review__header h1 {
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  margin: 8px 0;
+  line-height: 1.2;
+}
+
+.manual-review__header p,
+.manual-review__survey-intro p {
+  color: var(--color-text-secondary, #596678);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.manual-review__progress-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+  gap: 6px;
+  font-size: 0.87rem;
+}
+
+.manual-review__progress-summary span {
+  color: var(--color-text-secondary, #596678);
+}
+
+.manual-review__progress-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--color-border, #e2e8f0);
+  overflow: hidden;
+  margin-bottom: var(--space-6, 24px);
+}
+
+.manual-review__progress-track > div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary, #3767b1);
+  transition: width 150ms ease;
+}
+
+.manual-review__requirement,
+.manual-review__survey {
+  border: 1px solid var(--color-border, #dde2e9);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-surface, #fff);
+  box-shadow: var(--shadow-sm, 0 2px 6px rgb(0 0 0 / 0.03));
+  padding: var(--space-6, 24px);
+  margin-bottom: var(--space-5, 20px);
+}
+
+.manual-review__section-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.manual-review__status {
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.78rem;
+}
+
+.manual-review__status--answered {
+  color: var(--color-success, #2c7850);
+  font-weight: 700;
+}
+
+.manual-review__requirement h2 {
+  font-size: 1.17rem;
+  margin: 14px 0 10px;
+}
+
+.manual-review__requirement-text {
+  line-height: 1.75;
+  white-space: pre-wrap;
+  margin: 0;
+  font-size: 1.01rem;
+}
+
+.manual-review__survey-intro {
+  margin-bottom: 20px;
+}
+
+.manual-review__survey-intro h2 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+.manual-review__survey-intro .manual-review__survey-hint {
+  font-size: 0.83rem;
+  margin-top: 10px;
+}
+
+.manual-review__criteria {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.manual-review__alert,
+.manual-review__error {
+  border-radius: var(--radius-sm, 7px);
+  padding: 11px 13px;
+  font-size: 0.87rem;
+  line-height: 1.5;
+}
+
+.manual-review__alert {
+  border: 1px solid #e5ba6e;
+  background: #fff8e7;
+  color: #744c10;
+  margin-bottom: 15px;
+}
+
+.manual-review__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.manual-review__feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.8rem;
+}
+
+.manual-review__error {
+  margin: 0;
+  background: #fff2f1;
+  border: 1px solid #eeb9b3;
+  color: #9a2f26;
+}
+
+.manual-review__navigation {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.manual-review__back,
+.manual-review__next {
+  border-radius: var(--radius-md, 8px);
+  padding: 11px 18px;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.manual-review__back {
+  color: var(--color-text, #192536);
+  border: 1px solid var(--color-border, #d9dfe6);
+  background: var(--color-surface, #fff);
+}
+
+.manual-review__next {
+  background: var(--color-primary, #3767b1);
+  color: #fff;
+  border: 1px solid transparent;
+}
+
+.manual-review button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.manual-review__loading {
+  width: min(100% - 32px, 920px);
+  margin: 60px auto;
+}
+
+@media (max-width: 640px) {
+  .manual-review__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .manual-review__progress-summary {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  .manual-review__requirement,
+  .manual-review__survey {
+    padding: 16px;
+  }
+  .manual-review__navigation {
+    width: 100%;
+  }
+  .manual-review__back,
+  .manual-review__next {
+    flex: 1;
+  }
+}

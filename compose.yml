@@ -29,6 +29,23 @@ services:
       - backend
     restart: unless-stopped
 
+  dev-db:
+    image: postgres:17
+    restart: unless-stopped
+    profiles: ["dev-db"]
+
+    environment:
+      POSTGRES_USER: research_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: research_db
+
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+
   # this version runs on cpu and is compatible with all hardware
   ollama:
     image: ollama/ollama:latest
@@ -76,7 +93,6 @@ services:
       start_period: 2s
     restart: unless-stopped
 
-
     # installs model once ollama is ready. if model has already been installed in the volume,
     # it will not be reinstalled.
   ollama-model-install:
@@ -101,3 +117,4 @@ volumes:
     name: persistent_data
   ollama_models:
     name: ollama_data
+  postgres_data:

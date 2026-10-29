@@ -1,0 +1,265 @@
+.study-reference-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  font-size: var(--text-base);
+}
+
+.study-reference-panel__tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.study-reference-panel__tabs button {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.study-reference-panel__tabs button:hover {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-subtle);
+}
+
+.study-reference-panel__tabs button.study-reference-panel__tab--active {
+  color: var(--color-primary-text);
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-subtle);
+  font-weight: var(--weight-semibold);
+}
+
+/* Only the document/assessment area scrolls; controls stay in place. */
+.study-reference-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-5);
+}
+
+.study-reference-panel__document-section + .study-reference-panel__document-section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.study-reference-panel__document h3,
+.study-reference-panel__assessment h3 {
+  font-size: var(--text-base);
+  margin: 0 0 var(--space-3);
+}
+
+.study-reference-panel__text {
+  line-height: var(--leading-relaxed);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.study-reference-panel__figure {
+  margin: var(--space-6) 0 0;
+}
+
+.study-reference-panel__image-trigger {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+
+.study-reference-panel__image-trigger:hover,
+.study-reference-panel__image-trigger:focus-visible {
+  box-shadow: var(--shadow-md);
+}
+
+.study-reference-panel__image-trigger:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.study-reference-panel__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 45vh;
+  object-fit: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: transform var(--transition);
+}
+
+.study-reference-panel__image-trigger:hover .study-reference-panel__image,
+.study-reference-panel__image-trigger:focus-visible .study-reference-panel__image {
+  transform: scale(1.015);
+}
+
+.study-reference-panel__image-zoom-hint {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: var(--color-header-bg);
+  color: var(--color-text-inverse);
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+
+.study-reference-panel__image-trigger:hover .study-reference-panel__image-zoom-hint,
+.study-reference-panel__image-trigger:focus-visible .study-reference-panel__image-zoom-hint {
+  opacity: 1;
+}
+
+.study-reference-panel__image-zoom-hint svg {
+  width: 17px;
+  height: 17px;
+}
+
+.study-reference-panel__lightbox {
+  position: fixed;
+  inset: 0;
+  width: min(1200px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
+
+.study-reference-panel__lightbox[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.study-reference-panel__lightbox::backdrop {
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.study-reference-panel__lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.study-reference-panel__lightbox-header button {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.study-reference-panel__lightbox-header button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.study-reference-panel__lightbox-header button:hover {
+  background: var(--color-surface-muted);
+}
+
+.study-reference-panel__lightbox-image {
+  display: block;
+  width: 100%;
+  max-height: calc(100dvh - 125px);
+  min-height: 0;
+  object-fit: contain;
+}
+
+.study-reference-panel__hint {
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+  margin-bottom: var(--space-4);
+}
+
+.study-reference-panel__assessments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.study-reference-panel__assessment-card {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  overflow-wrap: anywhere;
+}
+
+.study-reference-panel__criterion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.study-reference-panel__criterion-id {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.study-reference-panel__criterion strong {
+  display: block;
+  font-size: var(--text-sm);
+}
+
+.study-reference-panel__answer {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.study-reference-panel__answer-label {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.study-reference-panel__answer p {
+  margin: var(--space-2) 0 0;
+  white-space: pre-wrap;
+  line-height: var(--leading-normal);
+}
+
+.study-reference-panel__message {
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
